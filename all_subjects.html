@@ -2,777 +2,543 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>안만두 전과목 퀘스트 (월·수·금)</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Confetti CDN -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>안만두 전과목 퀘스트 🌟</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <!-- FontAwesome CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;700;900&display=swap');
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #e0e7ff;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-sub: #64748b;
+      --border: #cbd5e1;
+    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; }
     body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background: linear-gradient(135deg, #f0fdf4 0%, #ede9fe 50%, #fef3c7 100%);
+      background: var(--bg);
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
       min-height: 100vh;
-      user-select: none;
+      color: var(--text);
     }
-    .font-jua { font-family: 'Jua', sans-serif; }
-    .shadow-soft { box-shadow: 0 10px 30px -5px rgba(124, 58, 237, 0.12), 0 8px 10px -6px rgba(124, 58, 237, 0.07); }
-    .animate-wiggle { animation: wiggle 2.5s ease-in-out infinite; }
-    @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
-
-    /* 교과서 표준 가로줄 분수 스타일 */
-    .math-fraction {
-      display: inline-flex;
+    .container {
+      width: 100%;
+      max-width: 620px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .header {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      vertical-align: middle;
-      margin: 0 0.25rem;
-      font-weight: 700;
-      line-height: 1;
     }
-    .math-fraction .frac-stack {
-      display: inline-flex;
+    .header h1 { font-size: 1.15rem; margin: 0; color: var(--primary); }
+    .nav-tabs {
+      display: flex;
+      background: #e2e8f0;
+      border-radius: 14px;
+      padding: 4px;
+      gap: 4px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: none;
+      padding: 8px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--text-sub);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .content-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .hidden { display: none !important; }
+    .q-box {
+      background: #f1f5f9;
+      border-radius: 16px;
+      padding: 18px;
+      line-height: 1.6;
+      border-left: 5px solid var(--primary);
+    }
+    .q-type { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-bottom: 6px; }
+    .q-text { font-size: 1.05rem; font-weight: 600; }
+    .options-grid { display: grid; gap: 10px; margin-top: 6px; }
+    .opt-btn {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .opt-btn:active { transform: scale(0.98); }
+    .opt-btn:hover { border-color: var(--primary); background: #f5f3ff; }
+    .mission-clear-banner {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 2px solid #3b82f6;
+      border-radius: 20px;
+      padding: 24px;
+      text-align: center;
+      display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      vertical-align: middle;
-      min-width: 1.1em;
+      gap: 14px;
     }
-    .math-fraction .frac-num { display: block; text-align: center; padding: 0 0.15rem 0.08rem; font-size: 0.95em; color: #1e1b4b; }
-    .math-fraction .frac-line { display: block; width: 100%; height: 2px; background-color: #1e293b; border-radius: 1px; margin: 1px 0; }
-    .math-fraction .frac-denom { display: block; text-align: center; padding: 0.08rem 0.15rem 0; font-size: 0.95em; color: #1e1b4b; }
+    .action-btn {
+      border: none;
+      padding: 14px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .btn-next { background: var(--success); color: white; }
+    .btn-wrong { background: #f59e0b; color: white; }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal-card {
+      background: white;
+      border-radius: 20px;
+      padding: 22px;
+      width: 100%;
+      max-width: 540px;
+      max-height: 85vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .note-card {
+      background: #fff;
+      border: 1px solid #fed7aa;
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
   </style>
 </head>
-<body class="p-3 sm:p-6 text-slate-800 flex flex-col items-center">
+<body>
 
-  <!-- HEADER -->
-  <header class="w-full max-w-4xl bg-white/95 backdrop-blur-md rounded-3xl p-4 sm:p-5 shadow-soft border border-white/80 mb-5">
-    <div class="flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-200 flex items-center justify-center text-3xl shadow-md animate-wiggle">
-          🌟
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-jua text-xl sm:text-2xl text-slate-900">안만두 전과목 퀘스트</h1>
-            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full">주 3회 (월·수·금) 코스</span>
-          </div>
-          <p class="text-xs text-slate-500 font-medium">국어 · 사회 · 과학 · 영어 (US G4-5) · 수학 연산</p>
-        </div>
-      </div>
+<div class="container">
+  <div class="header">
+    <h1>🌟 안만두 전과목 퀘스트</h1>
+    <button style="border:none; background: #e0e7ff; color:var(--primary); padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="openTeacherModal()">📋 학습관리</button>
+  </div>
 
-      <div class="flex items-center gap-2 sm:gap-4">
-        <div class="bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-2xl flex items-center gap-2">
-          <span class="text-amber-500 text-lg">⭐</span>
-          <div>
-            <span class="text-[10px] text-amber-700 block font-bold leading-none">학습 별</span>
-            <span id="header-stars" class="font-jua text-sm sm:text-base text-amber-900">0개</span>
-          </div>
-        </div>
-        <div class="bg-indigo-50 border border-indigo-200 px-3.5 py-1.5 rounded-2xl flex items-center gap-2">
-          <span class="text-indigo-500 text-lg">🔥</span>
-          <div>
-            <span class="text-[10px] text-indigo-700 block font-bold leading-none">연속 콤보</span>
-            <span id="header-combo" class="font-jua text-sm sm:text-base text-indigo-900">0 콤보</span>
-          </div>
-        </div>
-        <button onclick="openDashboardModal()" class="px-3.5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl shadow-md transition text-xs sm:text-sm font-bold flex items-center gap-1.5 active:scale-95">
-          <i class="fa-solid fa-chalkboard-user"></i>
-          <span class="hidden sm:inline">선생님</span> 학습 관리
-        </button>
+  <div class="nav-tabs" id="subject-tabs">
+    <button class="tab-btn active" onclick="selectSubject('korean')">국어 (6)</button>
+    <button class="tab-btn" onclick="selectSubject('social')">사회 (3)</button>
+    <button class="tab-btn" onclick="selectSubject('science')">과학 (3)</button>
+    <button class="tab-btn" onclick="selectSubject('english')">영어 (3)</button>
+    <button class="tab-btn" onclick="selectSubject('math')">수학연산 (3)</button>
+  </div>
+
+  <div id="quiz-card" class="content-card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span id="quiz-progress-tag" style="font-size:0.85rem; font-weight:bold; color:var(--primary);">문제 1/6</span>
+      <span id="quiz-score-tag" style="font-size:0.85rem; color:var(--text-sub);">진행률: 0%</span>
+    </div>
+
+    <div class="q-box">
+      <div class="q-type" id="q-sub-type">유형</div>
+      <div class="q-text" id="q-text">문제가 로드 중입니다...</div>
+    </div>
+
+    <div class="options-grid" id="q-options"></div>
+    <div id="q-feedback" style="font-weight:bold; min-height:24px; text-align:center;"></div>
+    <div id="next-action-area" class="hidden"></div>
+  </div>
+
+  <div id="all-clear-card" class="content-card hidden">
+    <div class="mission-clear-banner">
+      <div style="font-size:2.8rem;">🎉</div>
+      <h2 style="margin:0; color:#1d4ed8;">오늘 수고했어! ALL MISSION CLEAR!</h2>
+      <p style="margin:0; color:#3b82f6; font-size:0.95rem;">국어·사회·과학·영어·수학 전과목 퀘스트를 모두 완주했습니다!</p>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button class="action-btn btn-wrong" onclick="openWrongNoteModal()">📖 오답노트를 클릭해 봐!</button>
+        <button class="action-btn" style="background:#475569; color:white;" onclick="openTeacherModal()">📋 선생님 리포트</button>
       </div>
     </div>
-  </header>
+  </div>
+</div>
 
-  <!-- MAIN QUIZ CONTAINER -->
-  <main class="w-full max-w-4xl">
-    <section class="bg-white/95 backdrop-blur-md rounded-3xl p-5 sm:p-8 shadow-soft border border-white/80">
-      
-      <!-- Sub-Nav & Progress -->
-      <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
-        <div class="flex items-center gap-2">
-          <span id="other-badge" class="bg-purple-100 text-purple-800 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5">
-            <i class="fa-solid fa-graduation-cap"></i> <span>과목 퀴즈</span>
-          </span>
-          <span class="text-xs text-slate-500 font-bold" id="other-topic-tag">단원 탐험</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
-            <button onclick="switchOtherSubject('korean')" id="subnav-korean" class="px-2.5 py-1 rounded-lg bg-white text-indigo-700 shadow-xs font-bold">국어</button>
-            <button onclick="switchOtherSubject('social')" id="subnav-social" class="px-2.5 py-1 rounded-lg text-slate-500 font-bold">사회</button>
-            <button onclick="switchOtherSubject('science')" id="subnav-science" class="px-2.5 py-1 rounded-lg text-slate-500 font-bold">과학</button>
-            <button onclick="switchOtherSubject('english')" id="subnav-english" class="px-2.5 py-1 rounded-lg text-slate-500 font-bold">영어</button>
-            <button onclick="switchOtherSubject('math_calc')" id="subnav-math_calc" class="px-2.5 py-1 rounded-lg text-slate-500 font-bold">수학 연산</button>
-          </div>
-          <div class="text-xs text-slate-500 font-medium flex items-center gap-1 ml-2">
-            <span>⏱️</span>
-            <span id="other-timer" class="font-mono text-purple-600 font-bold">0초</span>
-          </div>
-        </div>
-      </div>
+<!-- 오답노트 모달 -->
+<div id="wrong-note-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="margin:0; font-size:1.2rem; color:#d97706;">📖 안만두 비밀 오답노트</h2>
+      <button onclick="closeWrongNoteModal()" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">✕</button>
+    </div>
+    <div id="wrong-note-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+  </div>
+</div>
 
-      <!-- Question Box -->
-      <div class="bg-gradient-to-r from-slate-50 to-purple-50/50 border-2 border-purple-100 rounded-3xl p-6 mb-5 min-h-[120px] flex flex-col items-center justify-center text-center">
-        <div id="other-q-icon" class="text-3xl mb-2">📚</div>
-        <p id="other-q-text" class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed max-w-xl">
-          문제를 불러오고 있습니다...
-        </p>
-      </div>
-
-      <!-- Multiple Choice Options -->
-      <div id="other-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4"></div>
-
-      <!-- Subject Complete Banner -->
-      <div id="subject-complete-banner" class="hidden mb-4 p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 border-2 border-emerald-300 text-center shadow-md animate-fade-in">
-        <div class="text-3xl mb-1">🎉</div>
-        <h4 id="subject-complete-title" class="font-jua text-lg text-emerald-950">과목 퀴즈 완료!</h4>
-        <p id="subject-complete-desc" class="text-xs text-slate-600 mt-1 mb-3">안만두 학생, 멋져요! 다음 과목 퀴즈에 도전해 볼까요?</p>
-        <button id="next-subject-btn" onclick="goToNextSubject()" class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 text-white rounded-xl font-jua text-sm transition shadow active:scale-95 flex items-center justify-center gap-2 mx-auto">
-          <span>다음 과목으로 넘어가기</span> <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </div>
-
-      <!-- ALL MISSION CLEAR FINAL REPORT -->
-      <div id="all-mission-clear-card" class="hidden mb-5 p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 text-white shadow-xl border-2 border-amber-300/60 animate-fade-in">
-        <div class="text-center mb-6">
-          <span class="inline-block px-4 py-1 rounded-full bg-amber-400 text-indigo-950 font-jua text-xs sm:text-sm font-black mb-2 shadow-md animate-bounce">
-            ⭐ ALL MISSION CLEAR ⭐
-          </span>
-          <h3 class="font-jua text-2xl sm:text-3xl text-amber-300">오늘 전과목 퀘스트 수고했어! 👏</h3>
-          <p class="text-xs sm:text-sm text-indigo-200 mt-1">안만두 학생, 국어·사회·과학·영어·수학연산 전과목을 완주했습니다!</p>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 text-center">
-          <div class="bg-white/10 rounded-2xl p-3 border border-white/10">
-            <span class="text-[11px] text-indigo-200 font-bold block">총 푼 문항</span>
-            <span id="clear-total-q" class="font-jua text-2xl text-white">18개</span>
-          </div>
-          <div class="bg-emerald-500/20 rounded-2xl p-3 border border-emerald-400/30">
-            <span class="text-[11px] text-emerald-200 font-bold block">정답률</span>
-            <span id="clear-acc-pct" class="font-jua text-2xl text-emerald-300">100%</span>
-          </div>
-          <div class="bg-amber-500/20 rounded-2xl p-3 border border-amber-400/30">
-            <span class="text-[11px] text-amber-200 font-bold block">정답 개수</span>
-            <span id="clear-correct-q" class="font-jua text-2xl text-amber-300">18개</span>
-          </div>
-          <div class="bg-rose-500/20 rounded-2xl p-3 border border-rose-400/30">
-            <span class="text-[11px] text-rose-200 font-bold block">오답(복습필요)</span>
-            <span id="clear-wrong-q" class="font-jua text-2xl text-rose-300">0개</span>
-          </div>
-        </div>
-
-        <div class="bg-white/95 rounded-2xl p-4 text-slate-800 shadow-inner mb-5">
-          <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200">
-            <h5 class="font-jua text-sm text-slate-800 flex items-center gap-1.5">
-              <i class="fa-solid fa-clipboard-check text-indigo-600"></i> 안만두 오늘 정답 & 오답 분석 리포트
-            </h5>
-            <span class="text-[11px] text-slate-500 font-bold">오답 문항은 붉은색으로 표기됩니다</span>
-          </div>
-          <div id="clear-review-list" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1 text-xs"></div>
-        </div>
-
-        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-          <button onclick="restartAllQuizzes()" class="px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-rotate-left"></i> 처음부터 다시 풀기
-          </button>
-          <button onclick="openDashboardModal()" class="px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 text-indigo-950 rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow active:scale-95">
-            <i class="fa-solid fa-chalkboard-user"></i> 선생님 학습관리 창 열기
-          </button>
-        </div>
-      </div>
-
-      <!-- Hint & Feedback Area -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
-        <button onclick="showOtherHint()" class="text-xs text-purple-600 hover:text-purple-800 font-bold flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 px-3.5 py-2 rounded-xl transition">
-          <i class="fa-regular fa-lightbulb text-amber-500"></i> 선생님 힌트 보기
-        </button>
-        <div id="other-feedback" class="text-sm font-bold min-h-[24px] flex items-center"></div>
-      </div>
-    </section>
-
-    <!-- TEACHER DASHBOARD MODAL -->
-    <div id="dashboard-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5 hidden">
-      <div class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-        <div class="p-5 bg-gradient-to-r from-emerald-700 via-teal-700 to-indigo-800 text-white flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-2xl">📊</div>
-            <div>
-              <h3 class="font-jua text-xl">안만두 전과목 학습 리포트</h3>
-              <p class="text-xs text-emerald-200">Google 스프레드시트 실시간 동기화</p>
-            </div>
-          </div>
-          <button onclick="closeDashboardModal()" class="text-white/70 hover:text-white text-2xl transition p-1">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-
-        <div class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
-          <div class="bg-emerald-50/70 border border-emerald-200 p-4 rounded-2xl">
-            <label class="text-xs font-bold text-emerald-950 flex items-center gap-1.5 mb-1.5">
-              <i class="fa-solid fa-cloud-arrow-up text-emerald-600"></i> Google Apps Script 웹앱 URL
-            </label>
-            <div class="flex gap-2">
-              <input type="text" id="gas-url-field" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-xs border border-emerald-200 bg-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400">
-              <button onclick="saveGasSetting()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition active:scale-95">저장</button>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="font-jua text-sm text-slate-800">풀이 기록 로그</h4>
-              <button onclick="clearStudyHistory()" class="text-xs text-rose-500 hover:underline font-bold">기록 초기화</button>
-            </div>
-            <div class="border border-slate-200 rounded-2xl overflow-hidden max-h-52 overflow-y-auto">
-              <table class="w-full text-xs text-left">
-                <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 sticky top-0">
-                  <tr>
-                    <th class="p-2.5">시간</th>
-                    <th class="p-2.5">과목</th>
-                    <th class="p-2.5">주제</th>
-                    <th class="p-2.5 text-center">결과</th>
-                    <th class="p-2.5">답안 / 정답</th>
-                    <th class="p-2.5 text-center">소요시간</th>
-                  </tr>
-                </thead>
-                <tbody id="dash-table-body" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-          <span class="text-xs text-slate-400">학생명: <strong>안만두</strong> | 전과목 세트</span>
-          <button onclick="closeDashboardModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition">닫기</button>
-        </div>
+<!-- 학습관리 모달 -->
+<div id="teacher-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="margin:0; font-size:1.2rem; color:var(--primary);">📋 안만두 학습기록 관리</h2>
+      <button onclick="closeTeacherModal()" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">✕</button>
+    </div>
+    <div>
+      <label style="font-size:0.85rem; font-weight:bold; color:var(--text-sub);">Google Apps Script Web App URL</label>
+      <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%; padding:10px; border-radius:10px; border:1px solid #cbd5e1; margin-top:4px; font-size:0.85rem;">
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button onclick="saveGasUrl()" style="flex:1; padding:10px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">연동 URL 저장</button>
+        <button onclick="clearLogs()" style="padding:10px; background:#ef4444; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">🗑️ 테스트 데이터 초기화</button>
       </div>
     </div>
-  </main>
+    <div style="max-height:260px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:10px; padding:10px; font-size:0.82rem;" id="log-list"></div>
+  </div>
+</div>
 
-  <script>
-    /* ================= AUDIO SYNTHESIZER ================= */
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    let soundCtx = null;
-    function initAudio() {
-      if (!soundCtx) soundCtx = new AudioCtx();
-      if (soundCtx.state === 'suspended') soundCtx.resume();
-    }
-    function triggerSound(type) {
-      try {
-        initAudio();
-        const now = soundCtx.currentTime;
-        if (type === 'correct') {
-          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-            const osc = soundCtx.createOscillator();
-            const gain = soundCtx.createGain();
-            osc.frequency.setValueAtTime(freq, now + i * 0.07);
-            gain.gain.setValueAtTime(0.2, now + i * 0.07);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.25);
-            osc.connect(gain); gain.connect(soundCtx.destination);
-            osc.start(now + i * 0.07); osc.stop(now + i * 0.07 + 0.3);
-          });
-        } else if (type === 'wrong') {
-          const osc = soundCtx.createOscillator();
-          const gain = soundCtx.createGain();
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(240, now);
-          osc.frequency.linearRampToValueAtTime(130, now + 0.25);
-          gain.gain.setValueAtTime(0.2, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-          osc.connect(gain); gain.connect(soundCtx.destination);
-          osc.start(now); osc.stop(now + 0.26);
-        } else if (type === 'victory') {
-          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach(f => {
-            const osc = soundCtx.createOscillator();
-            const gain = soundCtx.createGain();
-            osc.frequency.setValueAtTime(f, now);
-            gain.gain.setValueAtTime(0.12, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
-            osc.connect(gain); gain.connect(soundCtx.destination);
-            osc.start(now); osc.stop(now + 0.9);
-          });
-        }
-      } catch (e) {}
-    }
+<script>
+  let gasUrl = localStorage.getItem('mandoo_gas_url') || 'https://script.google.com/macros/s/AKfycbxRyWlPe3gNupbf38mDHXtMtsL7QkhPrB4Ex0Y_NYh9q-76MZDl76rQU_CaT-Drh2SC0A/exec';
+  let studyLogs = JSON.parse(localStorage.getItem('mandoo_all_logs') || '[]');
 
-    function renderFrac(num, denom) {
-      return `
-        <span class="math-fraction">
-          <span class="frac-stack">
-            <span class="frac-num">${num}</span>
-            <span class="frac-line"></span>
-            <span class="frac-denom">${denom}</span>
-          </span>
-        </span>
-      `;
-    }
+  const subjectOrder = ['korean', 'social', 'science', 'english', 'math'];
+  let currentSubject = 'korean';
+  let qIdx = 0;
 
-    /* ================= QUESTION BANK (5 과목) ================= */
-    const allSubjectsData = {
-      korean: [
-        { 
-          subject: "국어", topic: "속담의 의미 파악", 
-          q: "다음 중 '아무리 사소한 일이라도 정성을 다해 꾸준히 모아야 한다'는 뜻과 가장 잘 어울리는 속담은 무엇일까요?", 
-          opts: ["가는 말이 고와야 오는 말이 곱다", "소 잃고 외양간 고친다", "티끌 모아 태산", "닭 잡아먹고 오리발 내민다"], 
-          ans: "티끌 모아 태산", 
-          hint: "작은 흙먼지나 티끌이라도 차곡차곡 쌓이면 거대한 태산이 된다는 속담이에요!" 
-        },
-        { 
-          subject: "국어", topic: "관용어 표현", 
-          q: "친구가 새로운 일이나 어려운 도전을 주저하지 않고 시작할 때 알맞은 관용적 표현은?", 
-          opts: ["발을 벗고 나서다", "귀를 기울이다", "눈코 뜰 새 없다", "손에 땀을 쥐다"], 
-          ans: "발을 벗고 나서다", 
-          hint: "신발을 벗고 뛰어들 만큼 적극적이고 솔선수범하여 일에 나선다는 뜻이에요." 
-        },
-        { 
-          subject: "국어", topic: "사자성어", 
-          q: "'서로 다른 곳에 있지만 마음과 뜻이 하나로 통함'을 뜻하는 사자성어는 무엇일까요?", 
-          opts: ["이심전심 (以心傳心)", "작심삼일 (作心三日)", "동분서주 (東奔西走)", "전화위복 (轉禍爲福)"], 
-          ans: "이심전심 (以心傳心)", 
-          hint: "말을 길게 하지 않아도 마음에서 마음으로 뜻이 서로 전해진다는 의미의 성어예요!" 
-        },
-        { 
-          subject: "국어", topic: "올바른 맞춤법", 
-          q: "다음 문장 중에서 밑줄 친 단어의 맞춤법이 올바르게 쓰인 것은 무엇일까요?", 
-          opts: ["시간이 지나면 다 알게 됄 거야", "숙제를 먼저 끝내야 돼", "어제 피곤해서 일찍 잤되", "그 소문은 정말 안되보여"], 
-          ans: "숙제를 먼저 끝내야 돼", 
-          hint: "'하'를 넣어 자연스러우면 '되', '해'를 넣어 자연스러우면 '돼'입니다! (해야 해 ⭕ / 해야 하 ❌)" 
-        },
-        { 
-          subject: "국어", topic: "바른 띄어쓰기", 
-          q: "다음 중 띄어쓰기가 가장 올바른 문장을 골라보세요.", 
-          opts: ["우리는 내일 아침 일찍 출발할것이다.", "그는 만두를 배가 부를 만큼 먹었다.", "약속시간이 다 되었으니 빨리 가자.", "제주도로 떠난지 벌써 일주일이다."], 
-          ans: "그는 만두를 배가 부를 만큼 먹었다.", 
-          hint: "'만큼'은 앞의 용언(부를)을 꾸며주는 의존명사로 쓰일 때 반드시 앞말과 띄어 씁니다!" 
-        },
-        { 
-          subject: "국어", topic: "알맞은 조사와 접속 표현", 
-          q: "문맥에 맞는 조사와 접속사가 바르게 짝지어진 것은?<br><span class='text-sm bg-purple-50 text-purple-900 px-2 py-1 rounded font-bold inline-block mt-1'>\"만두는 수학( ㉠ ) 잘하고, ( ㉡ ) 국어에도 관심이 많다.\"</span>", 
-          opts: ["㉠ 도 , ㉡ 그리고", "㉠ 을 , ㉡ 하지만", "㉠ 과 , ㉡ 따라서", "㉠ 에 , ㉡ 그런데"], 
-          ans: "㉠ 도 , ㉡ 그리고", 
-          hint: "두 가지 사실을 대등하게 덧붙여 이어줄 때 쓰는 조사와 접속 부사예요." 
-        }
-      ],
-      social: [
-        { 
-          subject: "사회", topic: "우리나라 영토와 해양 자원", 
-          q: "우리나라 동쪽 끝에 위치하여 풍부한 천연가스와 해양 생태계를 품고 있는 소중한 화산섬은?", 
-          opts: ["마라도", "독도", "백령도", "거제도"], 
-          ans: "독도", 
-          hint: "대한민국 동쪽 끝, 울릉도 옆의 소중한 우리 영토입니다." 
-        },
-        { 
-          subject: "사회", topic: "지형과 주민 생활", 
-          q: "우리나라 지형의 가장 큰 특징으로, 동쪽은 높고 서쪽은 완만한 형태를 뜻하는 말은?", 
-          opts: ["동고서저", "남고북저", "동저서고", "분지 지형"], 
-          ans: "동고서저", 
-          hint: "태백산맥이 동쪽에 치우쳐 있어 동쪽이 높고(高) 서쪽이 낮습니다(低)." 
-        },
-        { 
-          subject: "사회", topic: "민주주의와 기본권", 
-          q: "국민이 스스로 나라의 주인이 되어 권력을 행사한다는 헌법상의 기본 원리는?", 
-          opts: ["국민 주권", "삼권 분립", "자유 시장", "법치주의"], 
-          ans: "국민 주권", 
-          hint: "대한민국 헌법 제1조 2항: 대한민국의 주권은 국민에게 있고, 모든 권력은 국민으로부터 나온다." 
-        }
-      ],
-      science: [
-        { 
-          subject: "과학", topic: "생태계와 먹이 그물", 
-          q: "햇빛, 물, 이산화탄소를 이용해 광합성을 하여 스스로 양분을 만들어내는 생태계 구성원은?", 
-          opts: ["생산자 (녹색 식물)", "1차 소비자 (초식 동물)", "2차 소비자 (육식 동물)", "분해자 (균류/세균)"], 
-          ans: "생산자 (녹색 식물)", 
-          hint: "스스로 양분을 만들어 먹이 그물의 기초가 되는 식물들을 의미해요." 
-        },
-        { 
-          subject: "과학", topic: "태양계와 행성", 
-          q: "태양계 행성 중 고리가 가장 뚜렷하고 아름다우며, 밀도가 물보다 낮아 물에 뜰 수 있는 행성은?", 
-          opts: ["목성", "토성", "천왕성", "해왕성"], 
-          ans: "토성", 
-          hint: "얼음과 암석 파편으로 이루어진 화려한 고리를 지닌 행성이에요." 
-        },
-        { 
-          subject: "과학", topic: "물질의 상태 변화", 
-          q: "얼음(고체)이 녹아 물(액체)이 되는 현상을 무엇이라고 부를까요?", 
-          opts: ["융해", "응고", "기화", "승화"], 
-          ans: "융해", 
-          hint: "고체가 열을 흡수하여 액체로 변하는 상태 변화를 뜻합니다." 
-        }
-      ],
-      english: [
-        { 
-          subject: "영어", topic: "US Grade 4-5: Irregular Verbs", 
-          q: "Choose the correct past tense verb to complete the sentence:<br><span class='text-sm bg-purple-50 text-indigo-950 px-2 py-1 rounded font-bold inline-block mt-1'>\"During our trip to Hawaii, Keanu ________ a sea turtle swimming near the reef.\"</span>", 
-          opts: ["saw", "seen", "seed", "sees"], 
-          ans: "saw", 
-          hint: "The simple past tense of the irregular verb 'see' is 'saw'." 
-        },
-        { 
-          subject: "영어", topic: "US Grade 4-5: Figurative Language", 
-          q: "Read the sentence and identify which phrase is a <strong>simile</strong>:<br><span class='text-sm bg-purple-50 text-indigo-950 px-2 py-1 rounded font-bold inline-block mt-1'>\"The warm tropical breeze was <u>as gentle as a whisper</u> on the sandy shore.\"</span>", 
-          opts: ["as gentle as a whisper", "tropical breeze", "sandy shore", "was gentle"], 
-          ans: "as gentle as a whisper", 
-          hint: "A simile compares two different things using the words 'like' or 'as'." 
-        },
-        { 
-          subject: "영어", topic: "US Grade 4-5: Subject-Verb Agreement", 
-          q: "Select the sentence with correct <strong>subject-verb agreement</strong>:", 
-          opts: [
-            "Neither of the boys wants to miss the soccer game.", 
-            "Neither of the boys want to miss the soccer game.", 
-            "The team of players are practicing right now.", 
-            "Each of the students have finished the reading log."
-          ], 
-          ans: "Neither of the boys wants to miss the soccer game.", 
-          hint: "'Neither' is a singular indefinite pronoun, so it takes the singular verb 'wants'." 
-        }
-      ],
-      math_calc: [
-        {
-          subject: "수학 연산", topic: "진분수의 곱셈",
-          q: `다음 진분수의 곱셈을 계산하고 기약분수로 나타내 보세요.<br><span class='text-xl inline-flex items-center gap-1.5 mt-2 bg-indigo-50 px-3 py-1 rounded-xl text-indigo-950 font-bold'>${renderFrac(3, 8)} × ${renderFrac(4, 9)} = ?</span>`,
-          opts: ["1/6", "1/4", "2/9", "3/16"],
-          optsHtml: [renderFrac(1, 6), renderFrac(1, 4), renderFrac(2, 9), renderFrac(3, 16)],
-          ans: "1/6",
-          hint: "분자 4와 분모 8을 4로 약분하고, 분자 3과 분모 9를 3으로 약분해 보세요! (1/2 × 1/3 = 1/6)"
-        },
-        {
-          subject: "수학 연산", topic: "세 자리 수 × 두 자리 수",
-          q: `다음 곱셈의 계산 결과는 얼마일까요?<br><span class='text-xl font-mono mt-2 inline-block bg-indigo-50 px-3 py-1 rounded-xl text-indigo-950 font-bold'>245 × 16 = ?</span>`,
-          opts: ["3,920", "3,820", "4,020", "3,960"],
-          ans: "3,920",
-          hint: "245 × 10 = 2,450 / 245 × 6 = 1,470 / 2,450 + 1,470 = 3,920"
-        },
-        {
-          subject: "수학 연산", topic: "세 자리 수 ÷ 두 자리 수",
-          q: `다음 나눗셈의 몫을 구해 보세요.<br><span class='text-xl font-mono mt-2 inline-block bg-indigo-50 px-3 py-1 rounded-xl text-indigo-950 font-bold'>756 ÷ 28 = ?</span>`,
-          opts: ["27", "26", "28", "25"],
-          ans: "27",
-          hint: "75 속에 28이 2번(56) 들어가고 남은 196 속에 28이 정확히 7번 들어갑니다."
-        }
-      ]
-    };
-
-    /* ================= STATE & STORAGE ================= */
-    let currentOtherSub = 'korean';
-    let otherIndex = 0;
-    let otherTimer = 0;
-    let otherTimerInterval = null;
-    let otherHintsUsed = 0;
-
-    const subjectSequence = ['korean', 'social', 'science', 'english', 'math_calc'];
-    let sessionCompletedSubjects = new Set();
-    let sessionQuizRecords = [];
-
-    let globalStars = parseInt(localStorage.getItem('mandoo_all_stars') || '0', 10);
-    let globalCombo = 0;
-    let maxCombo = parseInt(localStorage.getItem('mandoo_all_max_combo') || '0', 10);
-    let GAS_APP_URL = localStorage.getItem('mandoo_gas_url') || '';
-
-    function getLocalRecords() {
-      return JSON.parse(localStorage.getItem('mandoo_all_records') || '[]');
-    }
-
-    function addRecord(record) {
-      const records = getLocalRecords();
-      records.unshift({
-        id: Date.now(),
-        date: new Date().toLocaleString('ko-KR'),
-        ...record
-      });
-      localStorage.setItem('mandoo_all_records', JSON.stringify(records.slice(0, 300)));
-
-      if (GAS_APP_URL) {
-        fetch(GAS_APP_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            student: "안만두",
-            subject: record.subject,
-            topic: record.topic,
-            isCorrect: record.isCorrect,
-            userAnswer: record.userAnswer,
-            correctAnswer: record.correctAnswer,
-            timeSpent: record.timeSpent || 0,
-            hintCount: record.hintCount || 0,
-            date: new Date().toLocaleString('ko-KR')
-          })
-        }).catch(() => {});
+  const quizDB = {
+    korean: [
+      {
+        type: '속담',
+        q: '작고 하찮은 것이라도 꾸준히 모으면 큰 덩어리가 된다는 뜻의 속담은 무엇일까요?',
+        opts: ['티끌 모아 태산', '소 잃고 외양간 고친다', '가는 말이 고와야 오는 말이 곱다', '돌다리도 두들겨 보고 건너라'],
+        ans: '티끌 모아 태산',
+        explain: '【티끌 모아 태산】은 작은 노력이나 물건이 모여 아주 큰 결과를 만든다는 뜻입니다. (소 잃고 외양간 고친다는 일이 일어난 뒤 후회한다는 뜻이에요.)'
+      },
+      {
+        type: '관용어',
+        q: '어떤 일을 해결하기 위해 매우 적극적으로 앞장설 때 쓰는 관용어는?',
+        opts: ['발을 벗고 나서다', '손을 놓다', '눈에 불을 켜다', '귀를 기울이다'],
+        ans: '발을 벗고 나서다',
+        explain: '【발을 벗고 나서다】는 자기 일처럼 온 힘을 다해 적극적으로 돕는다는 뜻입니다. (손을 놓다는 하던 일을 그만두고 포기한다는 반대 뜻이에요.)'
+      },
+      {
+        type: '사자성어',
+        q: '마음과 마음이 서로 통하여 말을 하지 않아도 서로의 생각을 알 수 있음을 이르는 말은?',
+        opts: ['이심전심 (以心傳心)', '작심삼일 (作心三日)', '동문서답 (東問西答)', '고진감래 (苦盡甘來)'],
+        ans: '이심전심 (以心傳心)',
+        explain: '【이심전심】: 마음에서 마음으로 뜻이 전해진다는 뜻!\n【작심삼일】: 결심한 마음이 사흘(3일)을 가지 못한다는 뜻으로 서로 완전히 달라요.'
+      },
+      {
+        type: '맞춤법',
+        q: '다음 문장에서 밑줄 친 부분의 맞춤법이 올바른 것은?',
+        opts: ['숙제를 먼저 끝내야 돼.', '숙제를 먼저 끝내야 되.', '안 돼는 건 없어.', '그 일은 잘 되서 다행이야.'],
+        ans: '숙제를 먼저 끝내야 돼.',
+        explain: '문장의 맨 끝에는 \'되어\'의 준말인 \'돼\'를 씁니다. \'하\'를 넣었을 때 말이 되면 \'되\', \'해\'를 넣었을 때 말이 되면 \'돼\'를 쓰는 공식이에요! (끝내야 해 -> 돼)'
+      },
+      {
+        type: '띄어쓰기',
+        q: '다음 중 띄어쓰기가 가장 올바른 문장은?',
+        opts: ['배가 부를 만큼 많이 먹었다.', '배가 부를만큼 많이 먹었다.', '너 만큼 잘하는 사람도 드물다.', '만두 만큼 착한 아이.'],
+        ans: '배가 부를 만큼 많이 먹었다.',
+        explain: '\'만큼\' 앞에 꾸며주는 말(부를)이 올 때는 띄어 써야 합니다. (이름 뒤에 붙는 너만큼, 만두만큼은 붙여 씁니다.)'
+      },
+      {
+        type: '조사와 접속사',
+        q: '빈칸에 들어갈 가장 자연스러운 접속 부사와 조사는? "만두는 수학(  ) 잘하고, (  ) 영어도 즐겁게 공부한다."',
+        opts: ['도 / 그리고', '만 / 하지만', '을 / 그러나', '는 / 그런데'],
+        ans: '도 / 그리고',
+        explain: '두 가지 긍정적인 장점을 나란히 이어줄 때는 보조사 \'도\'와 앞뒤 문장을 더해주는 접속사 \'그리고\'가 가장 자연스럽습니다.'
       }
-      updateDashboardStats();
-    }
-
-    function updateHeaderStats() {
-      document.getElementById('header-stars').innerText = `${globalStars}개`;
-      document.getElementById('header-combo').innerText = `${globalCombo} 콤보`;
-    }
-
-    function switchOtherSubject(sub) {
-      currentOtherSub = sub;
-      subjectSequence.forEach(s => {
-        const btn = document.getElementById(`subnav-${s}`);
-        if (btn) btn.className = (s === sub) ? "px-2.5 py-1 rounded-lg bg-white text-indigo-700 shadow-xs font-bold" : "px-2.5 py-1 rounded-lg text-slate-500 font-bold";
-      });
-      document.getElementById('subject-complete-banner').classList.add('hidden');
-      document.getElementById('all-mission-clear-card').classList.add('hidden');
-      document.getElementById('other-options-container').classList.remove('hidden');
-      otherIndex = 0;
-      loadOtherQuestion();
-    }
-
-    function startOtherTimer() {
-      clearInterval(otherTimerInterval);
-      otherTimer = 0;
-      document.getElementById('other-timer').innerText = `0초`;
-      otherTimerInterval = setInterval(() => {
-        otherTimer++;
-        document.getElementById('other-timer').innerText = `${otherTimer}초`;
-      }, 1000);
-    }
-
-    function loadOtherQuestion() {
-      const qList = allSubjectsData[currentOtherSub] || [];
-      if (qList.length === 0) return;
-
-      if (otherIndex >= qList.length) {
-        showSubjectComplete();
-        return;
+    ],
+    social: [
+      {
+        type: '우리 국토',
+        q: '우리나라 영토의 가장 동쪽에 위치한 섬으로, 독도와 함께 동해를 지키는 섬은?',
+        opts: ['울릉도', '제주도', '백령도', '마라도'],
+        ans: '울릉도',
+        explain: '울릉도와 독도는 동해 바다에 위치한 우리나라의 소중한 영토입니다. (마라도는 가장 남쪽 끝 섬입니다.)'
+      },
+      {
+        type: '우리 지형',
+        q: '우리나라 지형의 가장 큰 특징으로, 동쪽은 산이 많고 서쪽은 평야가 많은 형태를 무엇이라 할까요?',
+        opts: ['동고서저', '동저서고', '남고북저', '분지 지형'],
+        ans: '동고서저',
+        explain: '동쪽(태백산맥)이 높고 서쪽으로 갈수록 지형이 낮아져 평야가 펼쳐지는 지형을 \'동고서저\'라고 합니다.'
+      },
+      {
+        type: '민주주의',
+        q: '국민이 나라의 주인이 되어 스스로 권리를 행사하는 정치 형태를 무엇이라 할까요?',
+        opts: ['민주주의', '독재주의', '군주제', '귀족정'],
+        ans: '민주주의',
+        explain: '대한민국 헌법 제1조: 대한민국은 민주공화국이며, 모든 주권은 국민에게서 나옵니다.'
       }
-
-      document.getElementById('subject-complete-banner').classList.add('hidden');
-      document.getElementById('all-mission-clear-card').classList.add('hidden');
-      document.getElementById('other-options-container').classList.remove('hidden');
-
-      const q = qList[otherIndex];
-      const iconMap = { korean: "📖", social: "🌏", science: "🔬", english: "🌺", math_calc: "🔢" };
-      const subNameMap = { korean: "국어", social: "사회", science: "과학", english: "영어 (US G4-5)", math_calc: "수학 연산" };
-
-      document.getElementById('other-badge').innerHTML = `<i class="fa-solid fa-graduation-cap"></i> <span>${subNameMap[currentOtherSub]} (${otherIndex + 1}/${qList.length})</span>`;
-      document.getElementById('other-topic-tag').innerText = q.topic;
-      document.getElementById('other-q-icon').innerText = iconMap[currentOtherSub] || "📚";
-      document.getElementById('other-q-text').innerHTML = q.q;
-      document.getElementById('other-feedback').innerHTML = "";
-
-      const optBox = document.getElementById('other-options-container');
-      optBox.innerHTML = "";
-
-      q.opts.forEach((opt, i) => {
-        const btn = document.createElement('button');
-        btn.className = "p-4 bg-slate-50 hover:bg-purple-50 border-2 border-slate-200 hover:border-purple-400 text-slate-800 font-bold rounded-2xl transition text-left px-5 flex items-center justify-between shadow-xs active:scale-95 text-xs sm:text-sm";
-        const label = q.optsHtml ? q.optsHtml[i] : opt;
-        btn.innerHTML = `<span>${label}</span> <i class="fa-solid fa-circle-check text-slate-300"></i>`;
-        btn.onclick = () => handleOtherAnswer(opt, btn, q);
-        optBox.appendChild(btn);
-      });
-
-      otherHintsUsed = 0;
-      startOtherTimer();
-    }
-
-    function handleOtherAnswer(selected, btn, q) {
-      clearInterval(otherTimerInterval);
-      const isCorrect = (selected === q.ans);
-
-      document.querySelectorAll('#other-options-container button').forEach(b => b.disabled = true);
-
-      const recordItem = {
-        subject: q.subject,
-        topic: q.topic,
-        isCorrect: isCorrect,
-        userAnswer: selected,
-        correctAnswer: q.ans,
-        timeSpent: otherTimer,
-        hintCount: otherHintsUsed
-      };
-      addRecord(recordItem);
-      sessionQuizRecords.push(recordItem);
-
-      const fb = document.getElementById('other-feedback');
-      if (isCorrect) {
-        triggerSound('correct');
-        confetti({ particleCount: 45, spread: 55, origin: { y: 0.7 } });
-        btn.classList.remove('bg-slate-50', 'border-slate-200');
-        btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
-        globalCombo++;
-        if (globalCombo > maxCombo) {
-          maxCombo = globalCombo;
-          localStorage.setItem('mandoo_all_max_combo', maxCombo);
-        }
-        globalStars += 2;
-        localStorage.setItem('mandoo_all_stars', globalStars);
-        updateHeaderStats();
-        fb.className = "text-xs sm:text-sm font-bold text-emerald-600 flex items-center gap-1.5";
-        fb.innerHTML = `<i class="fa-solid fa-circle-check"></i> 참 잘했어요! 정답입니다.`;
-      } else {
-        triggerSound('wrong');
-        btn.classList.remove('bg-slate-50', 'border-slate-200');
-        btn.classList.add('bg-rose-50', 'border-rose-400', 'text-rose-700');
-        globalCombo = 0;
-        updateHeaderStats();
-        fb.className = "text-xs sm:text-sm font-bold text-rose-500 flex items-center gap-1.5";
-        fb.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 정답은 [${q.ans}] 입니다.`;
+    ],
+    science: [
+      {
+        type: '생태계',
+        q: '빛과 이산화탄소를 이용해 광합성을 하여 스스로 양분을 만드는 생물을 무엇이라 할까요?',
+        opts: ['생산자 (식물)', '소비자 (동물)', '분해자 (곰팡이)', '기생생물'],
+        ans: '생산자 (식물)',
+        explain: '식물처럼 스스로 양분을 만드는 생물은 생태계의 \'생산자\'입니다.'
+      },
+      {
+        type: '태양계',
+        q: '태양계 행성 중 태양과 가장 가까우며 표면에 달처럼 운석 구덩이가 많은 행성은?',
+        opts: ['수성', '금성', '지구', '화성'],
+        ans: '수성',
+        explain: '태양에서 가장 가까운 행성은 수성(Mercury)이며 대기가 거의 없어 표면에 운석 구덩이가 많습니다.'
+      },
+      {
+        type: '물질의 상태변화',
+        q: '물이 끓어 수증기(기체)로 변하는 현상을 무엇이라고 부를까요?',
+        opts: ['기화', '응결', '응고', '융해'],
+        ans: '기화',
+        explain: '액체가 열을 얻어 기체로 변하는 상태 변화를 \'기화\'라고 합니다.'
       }
-
-      setTimeout(() => {
-        otherIndex++;
-        loadOtherQuestion();
-      }, 1600);
-    }
-
-    function showSubjectComplete() {
-      clearInterval(otherTimerInterval);
-      triggerSound('victory');
-      sessionCompletedSubjects.add(currentOtherSub);
-
-      const subNameMap = { korean: "국어", social: "사회", science: "과학", english: "영어", math_calc: "수학 연산" };
-      const currentName = subNameMap[currentOtherSub];
-      const currentPos = subjectSequence.indexOf(currentOtherSub);
-
-      if (currentPos === subjectSequence.length - 1 || sessionCompletedSubjects.size >= subjectSequence.length) {
-        showAllMissionClear();
-        return;
+    ],
+    english: [
+      {
+        type: 'Past Tense (G4-5)',
+        q: 'Choose the correct past tense verb: "While snorkeling at Hanauma Bay yesterday, we (    ) three sea turtles."',
+        opts: ['saw', 'seen', 'sees', 'have seen'],
+        ans: 'saw',
+        explain: '어제(yesterday) 있었던 과거의 단순한 동작을 나타내므로 불규칙 과거형 \'saw\'가 정답입니다.'
+      },
+      {
+        type: 'Figurative Language (Simile)',
+        q: 'Which of the following sentences contains a "simile"?',
+        opts: ['The island breeze was as gentle as a whisper.', 'The stars were twinkling diamonds.', 'The ocean waves danced in the sunlight.', 'Time flies when you have fun.'],
+        ans: 'The island breeze was as gentle as a whisper.',
+        explain: '\'as ~ as\'나 \'like\'를 써서 두 대상을 직접 빗대어 표현한 문장을 Simile(직유법)이라고 부릅니다.'
+      },
+      {
+        type: 'Subject-Verb Agreement (G4-5)',
+        q: 'Fill in the blank: "Neither of the boys (    ) to miss the championship soccer match."',
+        opts: ['wants', 'want', 'are wanting', 'have wanted'],
+        ans: 'wants',
+        explain: '\'Neither of the 복수명사\'는 3인칭 단수 취급하므로 동사에 -s가 붙은 \'wants\'가 올바릅니다.'
       }
-
-      const nextSub = subjectSequence[currentPos + 1];
-      const nextName = subNameMap[nextSub];
-
-      confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-      document.getElementById('other-q-icon').innerText = "🏆";
-      document.getElementById('other-q-text').innerHTML = `<span class="text-emerald-700 font-jua text-xl">${currentName} 퀴즈 전 문항 클리어!</span><br><span class="text-xs text-slate-500 font-medium">안만두 학생, 멋져요! 다음 과목 퀴즈로 이동해 보세요.</span>`;
-      document.getElementById('other-options-container').classList.add('hidden');
-
-      const banner = document.getElementById('subject-complete-banner');
-      banner.classList.remove('hidden');
-      document.getElementById('all-mission-clear-card').classList.add('hidden');
-      document.getElementById('subject-complete-title').innerText = `${currentName} 퀴즈를 모두 완료했어요!`;
-      document.getElementById('subject-complete-desc').innerText = `다음 코스인 [${nextName}] 퀴즈로 바로 이동해 볼까요?`;
-
-      const nextBtn = document.getElementById('next-subject-btn');
-      nextBtn.innerHTML = `<span>다음 과목 (${nextName})으로 넘어가기</span> <i class="fa-solid fa-arrow-right"></i>`;
-    }
-
-    function showAllMissionClear() {
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
-      document.getElementById('subject-complete-banner').classList.add('hidden');
-      document.getElementById('other-options-container').classList.add('hidden');
-
-      const clearCard = document.getElementById('all-mission-clear-card');
-      clearCard.classList.remove('hidden');
-      document.getElementById('other-q-icon').innerText = "👑";
-      document.getElementById('other-q-text').innerHTML = `<span class="text-indigo-900 font-jua text-2xl">전과목 코스 최종 완주 달성!</span><br><span class="text-xs text-slate-500 font-bold">국어, 사회, 과학, 영어, 수학연산 퀴즈를 모두 성공적으로 마쳤습니다.</span>`;
-
-      const totalQ = sessionQuizRecords.length;
-      const correctQ = sessionQuizRecords.filter(r => r.isCorrect).length;
-      const wrongQ = totalQ - correctQ;
-      const accPct = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
-
-      document.getElementById('clear-total-q').innerText = `${totalQ}개`;
-      document.getElementById('clear-correct-q').innerText = `${correctQ}개`;
-      document.getElementById('clear-wrong-q').innerText = `${wrongQ}개`;
-      document.getElementById('clear-acc-pct').innerText = `${accPct}%`;
-
-      const reviewList = document.getElementById('clear-review-list');
-      reviewList.innerHTML = "";
-      sessionQuizRecords.forEach(rec => {
-        const item = document.createElement('div');
-        item.className = `p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${rec.isCorrect ? 'bg-emerald-50/60 border-emerald-200 text-slate-800' : 'bg-rose-50 border-rose-300 text-rose-950'}`;
-        item.innerHTML = `
-          <div class="flex items-start gap-2">
-            <span class="text-sm font-black mt-0.5 ${rec.isCorrect ? 'text-emerald-600' : 'text-rose-600'}">${rec.isCorrect ? '⭕ 정답' : '❌ 오답'}</span>
-            <div>
-              <span class="font-bold block">[${rec.subject}] ${rec.topic}</span>
-              <span class="text-[11px] ${rec.isCorrect ? 'text-slate-500' : 'text-rose-800 font-semibold'}">
-                만두 답안: <strong>${rec.userAnswer}</strong> ${rec.isCorrect ? '' : `(정답: ${rec.correctAnswer})`}
-              </span>
-            </div>
-          </div>
-          <div class="text-right shrink-0">
-            <span class="text-[10px] text-slate-400 font-bold">소요 시간: ${rec.timeSpent}초</span>
-          </div>
-        `;
-        reviewList.appendChild(item);
-      });
-    }
-
-    function goToNextSubject() {
-      triggerSound('chat');
-      const currentPos = subjectSequence.indexOf(currentOtherSub);
-      if (currentPos < subjectSequence.length - 1) {
-        switchOtherSubject(subjectSequence[currentPos + 1]);
-      } else {
-        showAllMissionClear();
+    ],
+    math: [
+      {
+        type: '진분수 곱셈',
+        q: '다음 분수의 곱셈을 계산하세요: ( 3/8 ) × ( 4/9 ) = ?',
+        opts: ['1/6', '2/9', '1/12', '4/27'],
+        ans: '1/6',
+        explain: '분자 3과 분모 9를 3으로 약분(1, 3), 분자 4와 분모 8을 4로 약분(1, 2)하면 (1×1)/(2×3) = 1/6이 됩니다.'
+      },
+      {
+        type: '세자리 곱셈',
+        q: '다음 곱셈의 결과는 얼마일까요? 342 × 25 = ?',
+        opts: ['8,550', '8,450', '8,650', '7,550'],
+        ans: '8,550',
+        explain: '342 × 20 = 6,840이고, 342 × 5 = 1,710입니다. 둘을 더하면 6,840 + 1,710 = 8,550입니다.'
+      },
+      {
+        type: '세자리 나눗셈',
+        q: '다음 나눗셈의 몫은 얼마일까요? 896 ÷ 28 = ?',
+        opts: ['32', '31', '28', '34'],
+        ans: '32',
+        explain: '28 × 30 = 840, 896 - 840 = 56입니다. 56 ÷ 28 = 2이므로 몫은 32가 됩니다.'
       }
-    }
+    ]
+  };
 
-    function restartAllQuizzes() {
-      triggerSound('chat');
-      sessionCompletedSubjects.clear();
-      sessionQuizRecords = [];
-      switchOtherSubject('korean');
-    }
-
-    function showOtherHint() {
-      otherHintsUsed++;
-      const q = allSubjectsData[currentOtherSub][otherIndex];
-      const fb = document.getElementById('other-feedback');
-      fb.className = "text-xs font-bold text-purple-800 bg-purple-50 p-2.5 rounded-xl border border-purple-200";
-      fb.innerHTML = `<i class="fa-regular fa-lightbulb text-amber-500"></i> 힌트: ${q.hint}`;
-    }
-
-    /* ================= DASHBOARD CONTROLS ================= */
-    function openDashboardModal() {
-      updateDashboardStats();
-      document.getElementById('dashboard-modal').classList.remove('hidden');
-      document.getElementById('gas-url-field').value = GAS_APP_URL;
-    }
-    function closeDashboardModal() { document.getElementById('dashboard-modal').classList.add('hidden'); }
-    function saveGasSetting() {
-      const val = document.getElementById('gas-url-field').value.trim();
-      GAS_APP_URL = val;
-      localStorage.setItem('mandoo_gas_url', val);
-      alert('Google Apps Script 연동 URL이 저장되었습니다.');
-    }
-    function clearStudyHistory() {
-      localStorage.removeItem('mandoo_all_records');
-      updateDashboardStats();
-      alert('전과목 풀이 기록이 초기화되었습니다.');
-    }
-
-    function updateDashboardStats() {
-      const records = getLocalRecords();
-      const tbody = document.getElementById('dash-table-body');
-      tbody.innerHTML = "";
-      if (records.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">아직 학습 기록이 없습니다.</td></tr>`;
-        return;
-      }
-      records.slice(0, 30).forEach(r => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-          <td class="p-2.5 text-slate-400 text-[11px]">${r.date ? r.date.split(' ')[1] : '-'}</td>
-          <td class="p-2.5 font-bold text-indigo-700">${r.subject}</td>
-          <td class="p-2.5 text-slate-700 font-medium">${r.topic}</td>
-          <td class="p-2.5 text-center">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}">${r.isCorrect ? '정답' : '오답'}</span>
-          </td>
-          <td class="p-2.5 text-[11px]">
-            <span class="font-bold ${r.isCorrect ? 'text-emerald-700' : 'text-rose-600'}">${r.userAnswer || '-'}</span>
-            ${r.isCorrect ? '' : `<span class="text-slate-400 block text-[10px]">(정답: ${r.correctAnswer || '-'})</span>`}
-          </td>
-          <td class="p-2.5 text-center text-slate-500">${r.timeSpent || 0}초</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    window.addEventListener('load', () => {
-      updateHeaderStats();
-      switchOtherSubject('korean');
+  function selectSubject(sub) {
+    currentSubject = sub;
+    qIdx = 0;
+    document.querySelectorAll('#subject-tabs .tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', subjectOrder[i] === sub);
     });
-  </script>
+    document.getElementById('all-clear-card').classList.add('hidden');
+    document.getElementById('quiz-card').classList.remove('hidden');
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    const list = quizDB[currentSubject];
+    const q = list[qIdx];
+    document.getElementById('quiz-progress-tag').innerText = `문제 ${qIdx + 1}/${list.length}`;
+    document.getElementById('quiz-score-tag').innerText = `과목: ${currentSubject.toUpperCase()}`;
+    document.getElementById('q-sub-type').innerText = `[${q.type}]`;
+    document.getElementById('q-text').innerText = q.q;
+    document.getElementById('q-feedback').innerText = '';
+    document.getElementById('next-action-area').classList.add('hidden');
+
+    const optBox = document.getElementById('q-options');
+    optBox.innerHTML = '';
+    q.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.innerText = opt;
+      btn.onclick = () => checkAnswer(opt, q);
+      optBox.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(chosen, q) {
+    const isCorrect = (chosen === q.ans);
+    const fb = document.getElementById('q-feedback');
+    const nextArea = document.getElementById('next-action-area');
+
+    // 상세 오답/정답 해설 로깅
+    logResult(currentSubject, q.type + ': ' + q.q, chosen, q.ans, isCorrect, q.explain);
+
+    if (isCorrect) {
+      confetti({ particleCount: 40, spread: 50 });
+      fb.style.color = '#10b981';
+      fb.innerText = '⭕ 정답입니다! 훌륭해요!';
+    } else {
+      fb.style.color = '#ef4444';
+      fb.innerText = '❌ 아쉬워요! 오답노트에 자동 저장되었습니다.';
+    }
+
+    setTimeout(() => {
+      if (qIdx + 1 < quizDB[currentSubject].length) {
+        qIdx++;
+        renderQuestion();
+      } else {
+        // 과목 완주
+        const nextSubIdx = subjectOrder.indexOf(currentSubject) + 1;
+        if (nextSubIdx < subjectOrder.length) {
+          const nextSubName = subjectOrder[nextSubIdx];
+          const korMap = { social: '사회', science: '과학', english: '영어', math: '수학연산' };
+          nextArea.classList.remove('hidden');
+          nextArea.innerHTML = `
+            <button class="action-btn btn-next" style="width:100%; justify-content:center;" onclick="selectSubject('${nextSubName}')">
+              다음 과목 [${korMap[nextSubName]}]으로 넘어가기 👉
+            </button>
+          `;
+        } else {
+          // 전과목 완주
+          document.getElementById('quiz-card').classList.add('hidden');
+          document.getElementById('all-clear-card').classList.remove('hidden');
+          confetti({ particleCount: 90, spread: 70 });
+        }
+      }
+    }, 1100);
+  }
+
+  function logResult(subject, qName, userAns, correctAns, isCorrect, explain) {
+    const record = {
+      date: new Date().toLocaleTimeString(),
+      subject, qName, userAns, correctAns, isCorrect, explain
+    };
+    studyLogs.unshift(record);
+    localStorage.setItem('mandoo_all_logs', JSON.stringify(studyLogs));
+
+    if (gasUrl) {
+      fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify(record)
+      }).catch(e => console.log(e));
+    }
+  }
+
+  function clearLogs() {
+    if (confirm('지금까지의 테스트 학습 데이터를 모두 삭제할까요?')) {
+      studyLogs = [];
+      localStorage.removeItem('mandoo_all_logs');
+      renderLogs();
+      alert('데이터가 초기화되었습니다.');
+    }
+  }
+
+  function openWrongNoteModal() {
+    const box = document.getElementById('wrong-note-list');
+    const wrongList = studyLogs.filter(l => !l.isCorrect);
+
+    if (wrongList.length === 0) {
+      box.innerHTML = '<div style="text-align:center; padding:20px; color:#10b981; font-weight:bold;">🎉 틀린 문제가 없어요! 완벽하게 마스터했습니다!</div>';
+    } else {
+      box.innerHTML = wrongList.map((item, idx) => `
+        <div class="note-card">
+          <div style="font-weight:bold; color:#b45309;">📌 [${item.subject}] ${item.qName}</div>
+          <div style="font-size:0.92rem; color:#ef4444;">❌ 내가 고른 답: <b>${item.userAns}</b></div>
+          <div style="font-size:0.92rem; color:#10b981;">⭕ 실제 정답: <b>${item.correctAns}</b></div>
+          <div style="background:#fefce8; padding:8px 10px; border-radius:8px; font-size:0.85rem; color:#854d0e; line-height:1.4;">
+            💡 <b>핵심 해설:</b> ${item.explain || '개념을 다시 한번 확인해 보세요!'}
+          </div>
+        </div>
+      `).join('');
+    }
+    document.getElementById('wrong-note-modal').classList.remove('hidden');
+  }
+
+  function closeWrongNoteModal() {
+    document.getElementById('wrong-note-modal').classList.add('hidden');
+  }
+
+  function openTeacherModal() {
+    document.getElementById('gas-url-input').value = gasUrl;
+    renderLogs();
+    document.getElementById('teacher-modal').classList.remove('hidden');
+  }
+  function closeTeacherModal() {
+    document.getElementById('teacher-modal').classList.add('hidden');
+  }
+  function saveGasUrl() {
+    gasUrl = document.getElementById('gas-url-input').value.trim();
+    localStorage.setItem('mandoo_gas_url', gasUrl);
+    alert('구글 연동 URL이 저장되었습니다!');
+  }
+  function renderLogs() {
+    const box = document.getElementById('log-list');
+    if (studyLogs.length === 0) {
+      box.innerHTML = '기록된 학습 데이터가 없습니다.';
+      return;
+    }
+    box.innerHTML = studyLogs.map(l => `
+      <div style="padding:8px 0; border-bottom:1px solid #e2e8f0; display:flex; flex-direction:column; gap:3px;">
+        <div style="display:flex; justify-content:space-between;">
+          <span><b>${l.isCorrect ? '⭕ 정답' : '❌ 오답'} [${l.subject}]</b> ${l.qName}</span>
+          <span style="color:#64748b;">${l.date}</span>
+        </div>
+        <div style="color:#64748b; font-size:0.78rem;">선택: ${l.userAns} | 정답: ${l.correctAns}</div>
+      </div>
+    `).join('');
+  }
+
+  selectSubject('korean');
+</script>
 </body>
 </html>
