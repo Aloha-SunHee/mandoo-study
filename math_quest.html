@@ -16,7 +16,7 @@
       --card-bg: #ffffff;
       --text: #1e293b;
       --text-sub: #64748b;
-      --border: #e2e8f0;
+      --border: #cbd5e1;
     }
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; }
     body {
@@ -30,7 +30,7 @@
     }
     .container {
       width: 100%;
-      max-width: 600px;
+      max-width: 620px;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -80,7 +80,7 @@
     }
     .hidden { display: none !important; }
 
-    /* 교과서 표준 가로 분수 스타일 */
+    /* 교과서 표준 가로줄 분수 스타일 */
     .math-frac {
       display: inline-flex;
       align-items: center;
@@ -118,7 +118,7 @@
       font-weight: bold;
     }
 
-    /* 채팅 및 문제 영역 */
+    /* 채팅 및 발문 */
     .chat-bubble {
       background: #f1f5f9;
       border-radius: 18px;
@@ -136,7 +136,7 @@
       gap: 6px;
     }
     .chat-text { font-size: 1.05rem; }
-    
+
     .tip-box {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
@@ -188,7 +188,7 @@
     .opt-btn:active { transform: scale(0.98); }
     .opt-btn:hover { border-color: var(--primary); background: #f5f3ff; }
 
-    /* 다음 단계 전환 대형 버튼 */
+    /* 다음 단계 전환 대형 배너 */
     .next-stage-banner {
       background: linear-gradient(135deg, #ecfdf5, #d1fae5);
       border: 2px solid #10b981;
@@ -198,9 +198,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
-    .next-stage-banner h3 { margin: 0; color: #065f46; font-size: 1.3rem; }
+    .next-stage-banner h3 { margin: 0; color: #065f46; font-size: 1.25rem; }
     .next-stage-banner p { margin: 0; color: #047857; font-size: 0.95rem; }
     .next-stage-btn {
       background: #10b981;
@@ -217,7 +217,7 @@
       gap: 8px;
     }
 
-    /* 막대 3등분 시각화 */
+    /* 막대 3등분 인터랙션 */
     .bar-split-container {
       display: flex;
       flex-direction: column;
@@ -345,25 +345,26 @@
     <button class="tab-btn" id="tab-battle" onclick="switchStage('battle')">3. 평행사변형 배틀</button>
   </div>
 
-  <!-- 스테이지 1: 탐사 롤플레잉 -->
+  <!-- 스테이지 1: 탐사 롤플레잉 (10문항 풀코스) -->
   <div id="stage-chat" class="content-card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <span id="chat-progress-tag" style="font-size:0.85rem; font-weight:bold; color:var(--primary);">🚀 미션 1/3</span>
+      <span id="chat-progress-tag" style="font-size:0.85rem; font-weight:bold; color:var(--primary);">🚀 미션 1/10</span>
       <span id="chat-score-tag" style="font-size:0.85rem; color:var(--text-sub);">🔥 콤보: 0</span>
     </div>
 
-    <div id="chat-body" style="display:flex; flex-direction:column; gap:14px;">
-      <!-- 대화 및 문제가 동적으로 렌더링됩니다 -->
-    </div>
+    <div id="chat-body" style="display:flex; flex-direction:column; gap:14px;"></div>
   </div>
 
-  <!-- 스테이지 2: 선대칭 퍼즐 -->
+  <!-- 스테이지 2: 선대칭 모눈 퍼즐 -->
   <div id="stage-sym" class="content-card hidden">
     <div style="text-align:center;">
       <h3 style="margin:0 0 6px 0;">🧩 대칭 모형을 만들어 보자!</h3>
       <p style="margin:0; font-size:0.92rem; color:var(--text-sub);">
-        "나와 함께 만들어야 돼! 나는 아무 곳에나 둘 수도 있어, 너는 대칭이 될 수 있도록 놔야돼!"
+        "나와 함께 만들어야 돼. 나는 아무 곳에나 둘 수도 있어, 너는 대칭이 될 수 있도록 놔야돼. 어려운 미션이야!"
       </p>
+      <div style="font-size:0.82rem; color:#ef4444; font-weight:bold; margin-top:4px;" id="sym-fail-counter">
+        실패 횟수: 0회 (협동 성공률: 70%)
+      </div>
     </div>
 
     <div class="palette-row">
@@ -381,10 +382,10 @@
     </div>
   </div>
 
-  <!-- 스테이지 3: 평행사변형 배틀 -->
+  <!-- 스테이지 3: 평행사변형 배틀 (2문항 풀코스) -->
   <div id="stage-battle" class="content-card hidden">
     <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:var(--text-sub);">
-      <span>👾 몬스터 체력</span>
+      <span id="battle-round-tag">👾 몬스터 체력 (1/2단계)</span>
       <span id="monster-hp-txt">100%</span>
     </div>
     <div style="height:14px; background:#e2e8f0; border-radius:8px; overflow:hidden;">
@@ -399,6 +400,7 @@
     <div id="battle-q-text" style="font-size:1.05rem; font-weight:bold; text-align:center;"></div>
     <div id="battle-opts" class="options-grid"></div>
     <div id="battle-feedback" style="text-align:center; font-weight:bold; min-height:24px;"></div>
+    <div id="battle-final-box" class="hidden" style="width:100%;"></div>
   </div>
 </div>
 
@@ -414,7 +416,7 @@
       <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%; padding:10px; border-radius:10px; border:1px solid #cbd5e1; margin-top:4px; font-size:0.85rem;">
       <button onclick="saveGasUrl()" style="width:100%; margin-top:8px; padding:10px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">연동 URL 저장</button>
     </div>
-    <div style="max-height:240px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:10px; padding:10px; font-size:0.82rem;" id="log-list">
+    <div style="max-height:260px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:10px; padding:10px; font-size:0.82rem;" id="log-list">
       기록을 불러오는 중...
     </div>
   </div>
@@ -424,7 +426,7 @@
   let currentStage = 'chat';
   let gasUrl = localStorage.getItem('mandoo_gas_url') || '';
 
-  // 분수 렌더러
+  // 교과서 표준 가로줄 분수 렌더러
   function renderFrac(whole, num, den) {
     let html = '<span class="math-frac">';
     if (whole !== null && whole !== undefined && whole !== '') {
@@ -448,15 +450,16 @@
     if (stage === 'battle') loadBattleQuestion();
   }
 
-  /* ================= 1. 탐사 롤플레잉 엔진 ================= */
+  /* ================= 1. 탐사 롤플레잉 엔진 (10문항 완벽 복원) ================= */
   let chatStep = 0;
   let selectedCuts = [];
+  let chatCombo = 0;
 
   const chatQuests = [
+    // [우주여행 미션 1] 화성 우주복 무게
     {
-      id: 'space_1',
       speaker: '🚀 우주비행사 루카',
-      text: `만두야 반가워! 우주복 무게는 지구에서 80 kg이야. 화성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 19, 50)}배래. 화성에서 우주복 무게는 얼마일까?`,
+      text: `만두야 반가워! 우주복 무게는 지구에서 80 kg이야. 화성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 19, 50)}배래. 화성에서 잰 우주복의 무게는 얼마일까?`,
       tip: `80 kg을 똑같이 50등분한 것 중 19묶음이라는 뜻이에요!`,
       extraHint: `80 × ${renderFrac(null, 19, '(   )')} 식을 세우고 분모와 분자를 10으로 약분해 보세요!`,
       opts: [
@@ -467,38 +470,89 @@
       ],
       ans: `${renderFrac(30, 2, 5)} kg`
     },
+    // [우주여행 미션 2] 금성 우주복 무게
     {
-      id: 'chef_1',
+      speaker: '🚀 우주비행사 루카',
+      text: `이번에는 금성으로 가보자! 금성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 91, 100)}배래. 지구에서 80 kg인 우주복은 금성에서 몇 kg일까?`,
+      tip: `80 kg에 금성의 중력 비율을 곱해 보세요.`,
+      extraHint: `80 × ${renderFrac(null, 91, 100)} 식을 세운 뒤 80과 100을 20으로 약분해 보세요!`,
+      opts: [
+        `${renderFrac(72, 4, 5)} kg`,
+        `${renderFrac(70, 2, 5)} kg`,
+        `${renderFrac(74, 1, 5)} kg`,
+        `${renderFrac(71, 3, 5)} kg`
+      ],
+      ans: `${renderFrac(72, 4, 5)} kg`
+    },
+    // [우주여행 미션 3] 태양광 전지판 직사각형 넓이 (m²)
+    {
+      speaker: '🚀 우주비행사 루카',
+      text: `우주선에 전력을 공급할 직사각형 태양광 전지판을 조립해야 해. 가로가 ${renderFrac(1, 1, 3)} m이고 세로가 ${renderFrac(2, 3, 8)} m일 때, 이 전지판의 넓이는 얼마일까?`,
+      tip: `직사각형의 넓이는 (가로 × 세로)예요. 대분수를 가분수로 바꿔 곱해보세요!`,
+      extraHint: `${renderFrac(null, 4, 3)} × ${renderFrac(null, 19, 8)} 식을 만들고 4와 8을 먼저 약분해 보세요!`,
+      opts: [
+        `${renderFrac(3, 1, 6)} m²`,
+        `${renderFrac(3, 1, 3)} m²`,
+        `${renderFrac(2, 5, 6)} m²`,
+        `${renderFrac(3, 1, 2)} m²`
+      ],
+      ans: `${renderFrac(3, 1, 6)} m²`
+    },
+    // [셰프 미션 1] 딸기잼 설탕양
+    {
       speaker: '🍳 셰프 한',
-      text: `만두 조수, 어서 와요! 포대에 설탕이 9 kg 남았어요. 이 중 ${renderFrac(null, 4, 9)}를 사용해서 맛있는 딸기잼을 만들려고 해요. 딸기잼에 들어가는 설탕은 몇 kg일까요?`,
-      tip: `9 kg을 똑같이 9묶음으로 나눈 것 중 4묶음이에요!`,
-      extraHint: `식: 9 × ${renderFrac(null, 4, '(   )')} 빈칸에 들어갈 분모를 생각해보세요!`,
+      text: `만두 조수, 어서 와요! 15 kg짜리 포대에 설탕이 9 kg 남아있어요. 이 중 ${renderFrac(null, 4, 9)}를 사용해서 맛있는 딸기잼을 만들려고 해요. 딸기잼에 사용한 설탕은 몇 kg일까요?`,
+      tip: `남아있는 9 kg을 똑같이 9묶음으로 나눈 것 중 4묶음이에요!`,
+      extraHint: `식: 9 × ${renderFrac(null, 4, '(   )')} 빈칸에 들어갈 숫자를 생각하고 계산하면 돼요!`,
       opts: ['3 kg', '4 kg', '5 kg', `${renderFrac(4, 1, 2)} kg`],
       ans: '4 kg'
     },
+    // [셰프 미션 2] 레몬청 설탕양 (남은 설탕의 5/6)
     {
-      id: 'trip_1',
+      speaker: '🍳 셰프 한',
+      text: `딸기잼을 만들고 남은 설탕은 5 kg이에요. 이제 이 남은 설탕의 ${renderFrac(null, 5, 6)}로 상큼한 레몬청을 만들려고 해요. 레몬청에 들어간 설탕은 몇 kg일까요?`,
+      tip: `남은 5 kg을 똑같이 6묶음으로 나눈 것 중 5묶음이라는 뜻이에요!`,
+      extraHint: `식: 5 × ${renderFrac(null, 5, '(   )')} 빈칸을 채운 뒤 대분수로 바꿔보세요!`,
+      opts: [
+        `${renderFrac(4, 1, 6)} kg`,
+        `${renderFrac(4, 1, 3)} kg`,
+        `${renderFrac(3, 5, 6)} kg`,
+        `${renderFrac(4, 5, 6)} kg`
+      ],
+      ans: `${renderFrac(4, 1, 6)} kg`
+    },
+    // [셰프 미션 3] 텃밭 배추 넓이 (m²)
+    {
+      speaker: '🍳 셰프 한',
+      text: `요리에 쓸 채소를 따러 가요! 넓이가 12 m²인 직사각형 텃밭에서 파를 텃밭 전체의 ${renderFrac(null, 5, 8)}만큼 심었고, 배추는 파를 심은 넓이의 ${renderFrac(null, 2, 5)}만큼 심었대요. 배추를 심은 공간은 몇 m²일까요?`,
+      tip: `전체 넓이 12 m²에 파의 비율과 배추의 비율을 차례로 곱해보세요!`,
+      extraHint: `12 × ${renderFrac(null, 5, 8)} × ${renderFrac(null, 2, '(   )')} 약분을 먼저 해보세요!`,
+      opts: ['2 m²', '3 m²', '4 m²', `${renderFrac(3, 1, 2)} m²`],
+      ans: '3 m²'
+    },
+    // [채윤이 미션 1] 1시간 = 60분 -> 4시간은 몇 분?
+    {
       speaker: '👧 단짝 친구 채윤이',
-      text: `만두야! 우리가 체험관에 도착해서 관람할 수 있는 순수 시간은 딱 4시간이래. 먼저 1시간이 60분이니까, 4시간은 총 몇 분일까?`,
-      tip: `60분을 4번 더하거나 곱해보세요!`,
+      text: `만두야! 우리가 체험관에서 관람할 수 있는 순수 시간은 총 4시간이래. 먼저 1시간이 60분이니까, 4시간은 총 몇 분일까?`,
+      tip: `60분을 4번 더하거나 60에 4를 곱해보세요!`,
       extraHint: `60 × 4 = ( ? ) 분`,
       opts: ['180분', '200분', '240분', '300분'],
       ans: '240분'
     },
+    // [채윤이 미션 2] 막대 3등분 지점 찾기 (인터랙션)
     {
-      id: 'trip_split',
       speaker: '👧 단짝 친구 채윤이',
       type: 'bar_split',
-      text: `우와 맞아! 총 240분이야. 그런데 ㉮구역은 4시간 중 딱 ${renderFrac(null, 1, 3)}만 관람할 수 있대. 240분을 3묶음으로 똑같이 나누려면 몇 분, 몇 분 지점을 잘라야 할까? 아래에서 2곳을 골라줘!`,
+      text: `우와 맞아! 총 240분이야. 그런데 ㉮구역은 4시간 중 딱 ${renderFrac(null, 1, 3)}만 관람할 수 있대. 240분을 3묶음으로 똑같이 나누려면 몇 분, 몇 분 지점을 잘라야 할까? 아래 막대에서 2곳을 골라줘!`,
       tip: `240을 3으로 똑같이 나누면 한 묶음은 몇 분일까요?`,
       extraHint: `240 ÷ 3 = 80분! 첫 번째는 80분, 두 번째는 80분에 80분을 더한 지점이에요!`
     },
+    // [채윤이 미션 3] 80분은 몇 시간 몇 분?
     {
-      id: 'trip_time_calc',
       speaker: '👧 단짝 친구 채윤이',
       text: `좋았어! 한 묶음이 80분인 걸 찾았네! 그러면 80분은 몇 시간 몇 분일까? (4시간의 ${renderFrac(null, 1, 3)})`,
       tip: `60분은 1시간이에요. 80분에서 60분을 빼고 남는 분을 찾아보세요!`,
-      extraHint: `80분 = 60분(1시간) + ( ? )분 = ${renderFrac(1, 1, 3)} 시간!`,
+      extraHint: `80분 = 60분(1시간) + 20분 = ${renderFrac(1, 1, 3)} 시간!`,
       opts: [
         '1시간 10분',
         `1시간 20분 (${renderFrac(1, 1, 3)}시간)`,
@@ -507,11 +561,11 @@
       ],
       ans: `1시간 20분 (${renderFrac(1, 1, 3)}시간)`
     },
+    // [채윤이 미션 4] 빈칸 시간표 추론
     {
-      id: 'trip_timetable',
       speaker: '👧 단짝 친구 채윤이',
       type: 'timetable_choice',
-      text: `마지막 계획 완성 단계야! 우리가 10시 10분에 ㉮구역 체험관에 들어간대. 1시간 20분 동안 관람한다면, 몇 시 몇 분에 점심 먹으러 모이면 될까?`,
+      text: `마지막 계획 완성 단계야! 우리가 오전 10시 10분에 ㉮구역 체험관에 들어간대. 1시간 20분 동안 관람한다면, 몇 시 몇 분에 점심 먹으러 모이면 될까?`,
       tip: `10시 10분에 1시간 20분을 더해보세요!`,
       extraHint: `10시 + 1시간 = 11시, 10분 + 20분 = ( ? )분!`,
       opts: ['오전 11시 10분', '오전 11시 20분', '오전 11시 30분', '오전 11시 40분'],
@@ -523,15 +577,15 @@
     const container = document.getElementById('chat-body');
     container.innerHTML = '';
 
+    // 10문항 완주 시 -> 다음 코스(선대칭 퍼즐) 전환 배너 렌더링
     if (chatStep >= chatQuests.length) {
-      // 3대 롤플레잉 미션 모두 완료 시 -> 다음 단계(선대칭 퍼즐) 전환 배너 렌더링
       container.innerHTML = `
         <div class="next-stage-banner">
           <div style="font-size:2.5rem;">🏆</div>
           <h3>우주·셰프·여행 3대 탐구 미션 완전 정복!</h3>
-          <p>안만두 학생, 정말 대단해요! 복잡한 분수와 시간 계산을 스스로 멋지게 풀어냈습니다.</p>
+          <p>안만두 학생, 정말 대단해요! 10개의 복잡한 분수와 시간 계획을 스스로 멋지게 풀어냈습니다.</p>
           <button class="next-stage-btn" onclick="switchStage('sym')">
-            🧩 다음 코스: 선대칭 모눈종이 퍼즐 도전하기 👉
+            🧩 2단계: 선대칭 모눈종이 퍼즐 도전하기 👉
           </button>
         </div>
       `;
@@ -541,6 +595,7 @@
 
     const q = chatQuests[chatStep];
     document.getElementById('chat-progress-tag').innerText = `🚀 사고력 탐사 (${chatStep + 1}/${chatQuests.length})`;
+    document.getElementById('chat-score-tag').innerText = `🔥 콤보: ${chatCombo}`;
 
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
@@ -550,7 +605,7 @@
     `;
     container.appendChild(bubble);
 
-    // 개념 팁
+    // 생각 열기 (원리 설명)
     const tip = document.createElement('div');
     tip.className = 'tip-box';
     tip.innerHTML = `💡 <b>생각 열기:</b> ${q.tip}`;
@@ -601,7 +656,7 @@
       return;
     }
 
-    // 인터랙션: 시간표 제시 후 선택
+    // 인터랙션: 시간표 카드
     if (q.type === 'timetable_choice') {
       const tt = document.createElement('div');
       tt.className = 'timetable-card';
@@ -617,7 +672,7 @@
       container.appendChild(tt);
     }
 
-    // 일반 4지선다 옵션
+    // 4지선다 옵션
     const optGrid = document.createElement('div');
     optGrid.className = 'options-grid';
     q.opts.forEach(opt => {
@@ -658,10 +713,12 @@
 
     if (isCorrect) {
       confetti({ particleCount: 50, spread: 60 });
+      chatCombo++;
       fb.style.color = '#10b981';
       fb.innerText = '정답이야! 80분, 160분을 자르면 80분씩 3묶음으로 딱 나뉘어! 👏';
       setTimeout(() => { chatStep++; renderChatQuest(); }, 1400);
     } else {
+      chatCombo = 0;
       fb.style.color = '#ef4444';
       fb.innerText = '다시 확인해 볼까? 240분을 3으로 나누면 한 묶음에 몇 분일까?';
     }
@@ -676,6 +733,7 @@
 
     if (isCorrect) {
       confetti({ particleCount: 40, spread: 50 });
+      chatCombo++;
       fb.style.color = '#10b981';
       fb.innerText = '정답입니다! 완벽해요! ✨';
       setTimeout(() => {
@@ -683,6 +741,7 @@
         renderChatQuest();
       }, 1200);
     } else {
+      chatCombo = 0;
       fb.style.color = '#ef4444';
       fb.innerText = '아쉬워요! 생각 열기와 부분 힌트를 다시 확인해 보세요.';
     }
@@ -714,7 +773,6 @@
     svg.innerHTML = '';
     const S = 80;
 
-    // 모눈 그리드 및 대각선
     for (let r = 0; r < 4; r++) {
       for (let c = 0; c < 4; c++) {
         const x = c * S, y = r * S;
@@ -725,7 +783,6 @@
         rect.setAttribute('stroke-width', '1');
         svg.appendChild(rect);
 
-        // 대각선 X
         const d1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         d1.setAttribute('x1', x); d1.setAttribute('y1', y);
         d1.setAttribute('x2', x + S); d1.setAttribute('y2', y + S);
@@ -738,7 +795,6 @@
         d2.setAttribute('stroke', '#e2e8f0');
         svg.appendChild(d2);
 
-        // 4개 삼각영역 클릭 투명 패스
         ['T','R','B','L'].forEach(sub => {
           const path = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
           let pts = '';
@@ -773,9 +829,8 @@
     if (gridState[r][c][sub]) return;
 
     if (currentPieceType === 'small_tri') {
-      gridState[r][c][sub] = '#f59e0b'; // 노랑
+      gridState[r][c][sub] = '#f59e0b';
     } else if (currentPieceType === 'big_tri') {
-      // 2칸 직각이등변삼각형 결합
       const neighbor = (sub === 'T') ? 'R' : (sub === 'R') ? 'B' : (sub === 'B') ? 'L' : 'T';
       if (gridState[r][c][neighbor]) {
         alert('이곳에는 큰 삼각형(2칸)을 온전히 놓을 수 없어요!');
@@ -784,7 +839,6 @@
       gridState[r][c][sub] = '#2563eb';
       gridState[r][c][neighbor] = '#2563eb';
     } else if (currentPieceType === 'rhombus') {
-      // 4칸 마름모
       if (gridState[r][c].T || gridState[r][c].R || gridState[r][c].B || gridState[r][c].L) {
         alert('이곳에는 마름모(4칸)를 온전히 놓을 수 없어요!');
         return;
@@ -796,7 +850,53 @@
     }
 
     renderSymSVG();
-    checkSymmetryState();
+
+    // 컴퓨터 턴: 70%+ 확률로 협동 대칭 배치
+    setTimeout(() => {
+      computerMove(r, c, sub);
+      renderSymSVG();
+      checkSymmetryState();
+    }, 400);
+  }
+
+  function computerMove(userR, userC, userSub) {
+    const successProb = Math.min(0.95, 0.70 + symFailCount * 0.08);
+    const mirrorC = 3 - userC;
+    const mirrorSub = (userSub === 'L') ? 'R' : (userSub === 'R') ? 'L' : userSub;
+
+    if (Math.random() < successProb) {
+      // 대칭 성공 도와주기
+      if (currentPieceType === 'small_tri' && !gridState[userR][mirrorC][mirrorSub]) {
+        gridState[userR][mirrorC][mirrorSub] = '#f59e0b';
+      } else if (currentPieceType === 'big_tri') {
+        const neighbor = (mirrorSub === 'T') ? 'L' : (mirrorSub === 'L') ? 'B' : (mirrorSub === 'B') ? 'R' : 'T';
+        if (!gridState[userR][mirrorC][mirrorSub] && !gridState[userR][mirrorC][neighbor]) {
+          gridState[userR][mirrorC][mirrorSub] = '#2563eb';
+          gridState[userR][mirrorC][neighbor] = '#2563eb';
+        }
+      } else if (currentPieceType === 'rhombus') {
+        if (!gridState[userR][mirrorC].T && !gridState[userR][mirrorC].R && !gridState[userR][mirrorC].B && !gridState[userR][mirrorC].L) {
+          gridState[userR][mirrorC].T = '#10b981';
+          gridState[userR][mirrorC].R = '#10b981';
+          gridState[userR][mirrorC].B = '#10b981';
+          gridState[userR][mirrorC].L = '#10b981';
+        }
+      }
+    } else {
+      // 30% 임의 배치
+      const emptyCells = [];
+      for (let r = 0; r < 4; r++) {
+        for (let c = 2; c < 4; c++) {
+          ['T','R','B','L'].forEach(s => {
+            if (!gridState[r][c][s]) emptyCells.push({ r, c, s });
+          });
+        }
+      }
+      if (emptyCells.length > 0) {
+        const pick = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        gridState[pick.r][pick.c][pick.s] = '#f59e0b';
+      }
+    }
   }
 
   function checkSymmetryState() {
@@ -813,7 +913,6 @@
           if (leftColor) filled++;
           if (rightColor) filled++;
 
-          // 대칭 불일치 감지
           if ((leftColor && !rightColor) || (!leftColor && rightColor) || (leftColor && rightColor && leftColor !== rightColor)) {
             isSym = false;
           }
@@ -831,11 +930,13 @@
       nextBox.classList.remove('hidden');
       nextBox.innerHTML = `
         <button class="next-stage-btn" style="width:100%; justify-content:center;" onclick="switchStage('battle')">
-          ⚔️ 최종 보스: 평행사변형 배틀 도전하기 👉
+          ⚔️ 3단계: 평행사변형 배틀 도전하기 👉
         </button>
       `;
       logResult('사고력수학', '선대칭 퍼즐 완성', '완벽 대칭 성공', '선대칭', true);
     } else if (!isSym && filled >= 12) {
+      symFailCount++;
+      document.getElementById('sym-fail-counter').innerText = `실패 횟수: ${symFailCount}회 (협동 성공률: ${Math.round(Math.min(0.95, 0.70 + symFailCount * 0.08)*100)}%)`;
       fb.style.color = '#ef4444';
       fb.innerText = '아쉽지만 다음 기회에... 대칭이 어긋났어요!';
       nextBox.classList.remove('hidden');
@@ -847,33 +948,69 @@
     }
   }
 
-  /* ================= 3. 평행사변형 배틀 ================= */
+  /* ================= 3. 평행사변형 배틀 (2문항 풀코스) ================= */
   let monsterHp = 100;
+  let battleIdx = 0;
+
   const battleQuestions = [
     {
-      base: 4, height: 2.5,
-      baseLabel: renderFrac(3, 3, 4) + ' cm',
-      heightLabel: renderFrac(2, 2, 5) + ' cm',
+      baseLabel: `${renderFrac(3, 3, 4)} cm`,
+      heightLabel: `${renderFrac(2, 2, 5)} cm`,
       q: `밑변이 ${renderFrac(3, 3, 4)} cm, 높이가 ${renderFrac(2, 2, 5)} cm인 이 평행사변형의 넓이는 얼마일까요?`,
       opts: ['8 cm²', '9 cm²', `${renderFrac(10, 1, 2)} cm²`, `${renderFrac(9, 1, 4)} cm²`],
-      ans: '9 cm²'
+      ans: '9 cm²',
+      svg: `
+        <polygon points="50,110 230,110 290,40 110,40" fill="#fef3c7" stroke="#d97706" stroke-width="2.5" />
+        <line x1="110" y1="40" x2="110" y2="110" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
+        <path d="M 110 100 L 120 100 L 120 110" fill="none" stroke="#ef4444" stroke-width="1.5" />
+        <line x1="50" y1="125" x2="230" y2="125" stroke="#475569" stroke-width="1.5" />
+        <text x="140" y="142" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 3 3/4 cm</text>
+        <text x="75" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 2 2/5 cm</text>
+      `
+    },
+    {
+      baseLabel: `${renderFrac(4, 1, 6)} cm`,
+      heightLabel: `${renderFrac(3, 3, 5)} cm`,
+      q: `밑변이 ${renderFrac(4, 1, 6)} cm, 높이가 ${renderFrac(3, 3, 5)} cm인 이 평행사변형의 넓이는 얼마일까요?`,
+      opts: ['12 cm²', '14 cm²', '15 cm²', `${renderFrac(16, 1, 2)} cm²`],
+      ans: '15 cm²',
+      svg: `
+        <polygon points="40,115 220,115 285,35 105,35" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2.5" />
+        <line x1="105" y1="35" x2="105" y2="115" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
+        <path d="M 105 105 L 115 105 L 115 115" fill="none" stroke="#ef4444" stroke-width="1.5" />
+        <line x1="40" y1="130" x2="220" y2="130" stroke="#475569" stroke-width="1.5" />
+        <text x="130" y="145" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 4 1/6 cm</text>
+        <text x="70" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 3 3/5 cm</text>
+      `
     }
   ];
 
   function loadBattleQuestion() {
-    const q = battleQuestions[0];
-    document.getElementById('battle-q-text').innerHTML = q.q;
+    if (battleIdx >= battleQuestions.length) {
+      // 몬스터 완전 퇴치 완료
+      document.getElementById('battle-round-tag').innerText = `🏆 완벽 마스터!`;
+      document.getElementById('monster-hp-txt').innerText = `0%`;
+      document.getElementById('monster-hp-bar').style.width = `0%`;
+      document.getElementById('battle-q-text').innerText = `축하합니다! 몬스터를 물리치고 오늘 사고력 수학을 완벽히 마스터했습니다! 🏆`;
+      document.getElementById('battle-opts').innerHTML = '';
+      document.getElementById('battle-feedback').innerHTML = '';
+      document.getElementById('battle-final-box').classList.remove('hidden');
+      document.getElementById('battle-final-box').innerHTML = `
+        <button class="next-stage-btn" style="width:100%; justify-content:center;" onclick="openTeacherModal()">
+          📋 오늘의 학습 성취도 확인하기 👉
+        </button>
+      `;
+      confetti({ particleCount: 100, spread: 80 });
+      return;
+    }
 
-    // SVG 도형 렌더
-    const svg = document.getElementById('geo-svg');
-    svg.innerHTML = `
-      <polygon points="50,110 230,110 290,40 110,40" fill="#fef3c7" stroke="#d97706" stroke-width="2.5" />
-      <line x1="110" y1="40" x2="110" y2="110" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
-      <path d="M 110 100 L 120 100 L 120 110" fill="none" stroke="#ef4444" stroke-width="1.5" />
-      <line x1="50" y1="125" x2="230" y2="125" stroke="#475569" stroke-width="1.5" />
-      <text x="140" y="142" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 3 3/4 cm</text>
-      <text x="75" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 2 2/5 cm</text>
-    `;
+    const q = battleQuestions[battleIdx];
+    document.getElementById('battle-round-tag').innerText = `👾 몬스터 체력 (${battleIdx + 1}/2단계)`;
+    document.getElementById('monster-hp-txt').innerText = `${monsterHp}%`;
+    document.getElementById('monster-hp-bar').style.width = `${monsterHp}%`;
+    document.getElementById('battle-q-text').innerHTML = q.q;
+    document.getElementById('geo-svg').innerHTML = q.svg;
+    document.getElementById('battle-feedback').innerText = '';
 
     const container = document.getElementById('battle-opts');
     container.innerHTML = '';
@@ -884,15 +1021,19 @@
       btn.onclick = () => {
         const isCorrect = (opt === q.ans);
         const fb = document.getElementById('battle-feedback');
-        logResult('사고력수학', '평행사변형 넓이', opt.replace(/<[^>]*>?/gm, ''), q.ans.replace(/<[^>]*>?/gm, ''), isCorrect);
-        
+        logResult('사고력수학', `평행사변형 넓이 ${battleIdx + 1}단계`, opt.replace(/<[^>]*>?/gm, ''), q.ans.replace(/<[^>]*>?/gm, ''), isCorrect);
+
         if (isCorrect) {
-          confetti({ particleCount: 70, spread: 60 });
-          monsterHp = 0;
-          document.getElementById('monster-hp-bar').style.width = '0%';
-          document.getElementById('monster-hp-txt').innerText = '0%';
+          confetti({ particleCount: 60, spread: 60 });
+          monsterHp = Math.max(0, monsterHp - 50);
+          document.getElementById('monster-hp-bar').style.width = `${monsterHp}%`;
+          document.getElementById('monster-hp-txt').innerText = `${monsterHp}%`;
           fb.style.color = '#10b981';
-          fb.innerText = '정답입니다! 몬스터를 물리치고 오늘 사고력 수학을 완벽히 마스터했습니다! 🏆';
+          fb.innerText = '정답입니다! 몬스터에게 큰 타격을 주었어요! 💥';
+          setTimeout(() => {
+            battleIdx++;
+            loadBattleQuestion();
+          }, 1300);
         } else {
           fb.style.color = '#ef4444';
           fb.innerText = '아쉬워요! 밑변 × 높이를 대분수에서 가분수로 고쳐 계산해보세요.';
