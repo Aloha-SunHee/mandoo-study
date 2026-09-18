@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>안만두 전과목 퀘스트 🌟</title>
+  <title>안만두 사고력 수학 원정대 🥟</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
-      --primary: #4f46e5;
+      --primary: #6366f1;
       --primary-light: #e0e7ff;
+      --accent: #f59e0b;
       --success: #10b981;
       --danger: #ef4444;
       --bg: #f8fafc;
@@ -43,26 +44,25 @@
       justify-content: space-between;
       align-items: center;
     }
-    .header h1 { font-size: 1.15rem; margin: 0; color: var(--primary); }
+    .header h1 { font-size: 1.15rem; margin: 0; color: #4338ca; }
     .nav-tabs {
       display: flex;
       background: #e2e8f0;
       border-radius: 14px;
       padding: 4px;
       gap: 4px;
-      overflow-x: auto;
     }
     .tab-btn {
       flex: 1;
       border: none;
       background: none;
-      padding: 8px;
+      padding: 10px 8px;
       border-radius: 10px;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       font-weight: bold;
       color: var(--text-sub);
       cursor: pointer;
-      white-space: nowrap;
+      transition: all 0.2s;
     }
     .tab-btn.active {
       background: var(--card-bg);
@@ -79,33 +79,81 @@
       gap: 16px;
     }
     .hidden { display: none !important; }
-    .q-box {
+
+    .math-frac {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 2px;
+      font-family: inherit;
+    }
+    .math-frac .whole { font-size: 1.15em; margin-right: 3px; font-weight: bold; }
+    .math-frac .frac-box { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+    .math-frac .num { padding: 0 3px; font-size: 0.85em; font-weight: bold; }
+    .math-frac .bar { width: 100%; height: 1.5px; background-color: currentColor; margin: 2px 0; }
+    .math-frac .den { padding: 0 3px; font-size: 0.85em; font-weight: bold; }
+
+    .chat-bubble {
       background: #f1f5f9;
-      border-radius: 16px;
-      padding: 18px;
+      border-radius: 18px;
+      padding: 16px;
       line-height: 1.6;
       border-left: 5px solid var(--primary);
     }
-    .q-type { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-bottom: 6px; }
-    .q-text { font-size: 1.05rem; font-weight: 600; }
+    .chat-speaker { font-weight: bold; color: var(--primary); font-size: 0.95rem; margin-bottom: 6px; }
+    .chat-text { font-size: 1.05rem; }
+
+    .tip-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.92rem;
+      color: #1e40af;
+      line-height: 1.5;
+    }
+    .extra-hint-btn {
+      background: #f8fafc;
+      border: 1px dashed #3b82f6;
+      color: #2563eb;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+      align-self: flex-start;
+    }
+    .extra-hint-content {
+      background: #fefce8;
+      border: 1px solid #fef08a;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      color: #854d0e;
+    }
+
     .options-grid { display: grid; gap: 10px; margin-top: 6px; }
     .opt-btn {
       background: #f8fafc;
       border: 2px solid var(--border);
       border-radius: 14px;
       padding: 14px;
-      font-size: 1rem;
+      font-size: 1.05rem;
       cursor: pointer;
-      text-align: left;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
       font-weight: 500;
       transition: all 0.2s;
     }
     .opt-btn:active { transform: scale(0.98); }
     .opt-btn:hover { border-color: var(--primary); background: #f5f3ff; }
-    .mission-clear-banner {
-      background: linear-gradient(135deg, #eff6ff, #dbeafe);
-      border: 2px solid #3b82f6;
-      border-radius: 20px;
+
+    .next-stage-banner {
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      border: 2px solid #10b981;
+      border-radius: 18px;
       padding: 24px;
       text-align: center;
       display: flex;
@@ -113,95 +161,107 @@
       align-items: center;
       gap: 14px;
     }
-    .action-btn {
+    .next-stage-btn {
+      background: #10b981;
+      color: white;
       border: none;
-      padding: 14px 20px;
-      font-size: 1rem;
+      padding: 14px 24px;
+      font-size: 1.05rem;
       font-weight: bold;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
-    .btn-next { background: var(--success); color: white; }
-    .btn-wrong { background: #f59e0b; color: white; }
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-      z-index: 100;
-    }
-    .modal-card {
-      background: white;
-      border-radius: 20px;
-      padding: 22px;
-      width: 100%;
-      max-width: 540px;
-      max-height: 85vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .note-card {
-      background: #fff;
-      border: 1px solid #fed7aa;
       border-radius: 14px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(16,185,129,0.3);
     }
+    .bar-split-container { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; }
+    .bar-wrapper { position: relative; height: 48px; background: #e2e8f0; border-radius: 12px; display: flex; overflow: hidden; border: 2px solid #cbd5e1; }
+    .bar-seg { flex: 1; border-right: 1px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #64748b; }
+    .bar-seg:last-child { border-right: none; }
+    .cut-arrow-row { display: flex; justify-content: space-between; padding: 0 2px; }
+    .cut-point-btn { background: #ffffff; border: 2px solid #94a3b8; border-radius: 8px; padding: 6px 10px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+    .cut-point-btn.selected { background: #ef4444; border-color: #dc2626; color: white; }
+
+    .timetable-card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 14px; font-size: 0.92rem; }
+    .timetable-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
+    .timetable-row:last-child { border-bottom: none; }
+    .time-slot { font-weight: bold; color: var(--primary); }
+
+    .palette-row { display: flex; gap: 10px; justify-content: center; }
+    .piece-btn { border: 2px solid var(--border); background: white; border-radius: 12px; padding: 8px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: bold; font-size: 0.9rem; }
+    .piece-btn.active { border-color: var(--primary); background: #e0e7ff; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; padding: 16px; z-index: 100; }
+    .modal-card { background: white; border-radius: 20px; padding: 22px; width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .note-card { background: #fff; border: 1px solid #fed7aa; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="header">
-    <h1>🌟 안만두 전과목 퀘스트</h1>
-    <button style="border:none; background: #e0e7ff; color:var(--primary); padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="openTeacherModal()">📋 학습관리</button>
+    <h1>🥟 안만두 사고력 수학</h1>
+    <button style="border:none; background: #e0e7ff; color:#4338ca; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="openTeacherModal()">📋 학습관리</button>
   </div>
 
-  <div class="nav-tabs" id="subject-tabs">
-    <button class="tab-btn active" onclick="selectSubject('korean')">국어 (6)</button>
-    <button class="tab-btn" onclick="selectSubject('social')">사회 (3)</button>
-    <button class="tab-btn" onclick="selectSubject('science')">과학 (3)</button>
-    <button class="tab-btn" onclick="selectSubject('english')">영어 (3)</button>
-    <button class="tab-btn" onclick="selectSubject('math')">수학연산 (3)</button>
+  <div class="nav-tabs">
+    <button class="tab-btn active" id="tab-chat" onclick="switchStage('chat')">1. 탐사 롤플레잉</button>
+    <button class="tab-btn" id="tab-sym" onclick="switchStage('sym')">2. 선대칭 퍼즐</button>
+    <button class="tab-btn" id="tab-battle" onclick="switchStage('battle')">3. 평행사변형 배틀</button>
   </div>
 
-  <div id="quiz-card" class="content-card">
+  <!-- 스테이지 1: 탐사 롤플레잉 -->
+  <div id="stage-chat" class="content-card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <span id="quiz-progress-tag" style="font-size:0.85rem; font-weight:bold; color:var(--primary);">문제 1/6</span>
-      <span id="quiz-score-tag" style="font-size:0.85rem; color:var(--text-sub);">진행률: 0%</span>
+      <span id="chat-progress-tag" style="font-size:0.85rem; font-weight:bold; color:var(--primary);">🚀 미션 1/10</span>
+      <span id="chat-score-tag" style="font-size:0.85rem; color:var(--text-sub);">🔥 콤보: 0</span>
     </div>
-
-    <div class="q-box">
-      <div class="q-type" id="q-sub-type">유형</div>
-      <div class="q-text" id="q-text">문제가 로드 중입니다...</div>
-    </div>
-
-    <div class="options-grid" id="q-options"></div>
-    <div id="q-feedback" style="font-weight:bold; min-height:24px; text-align:center;"></div>
-    <div id="next-action-area" class="hidden"></div>
+    <div id="chat-body" style="display:flex; flex-direction:column; gap:14px;"></div>
   </div>
 
-  <div id="all-clear-card" class="content-card hidden">
-    <div class="mission-clear-banner">
-      <div style="font-size:2.8rem;">🎉</div>
-      <h2 style="margin:0; color:#1d4ed8;">오늘 수고했어! ALL MISSION CLEAR!</h2>
-      <p style="margin:0; color:#3b82f6; font-size:0.95rem;">국어·사회·과학·영어·수학 전과목 퀘스트를 모두 완주했습니다!</p>
-      <div style="display:flex; gap:10px; margin-top:8px;">
-        <button class="action-btn btn-wrong" onclick="openWrongNoteModal()">📖 오답노트를 클릭해 봐!</button>
-        <button class="action-btn" style="background:#475569; color:white;" onclick="openTeacherModal()">📋 선생님 리포트</button>
+  <!-- 스테이지 2: 선대칭 모눈 퍼즐 -->
+  <div id="stage-sym" class="content-card hidden">
+    <div style="text-align:center;">
+      <h3 style="margin:0 0 6px 0;">🧩 대칭 모형을 만들어 보자!</h3>
+      <p style="margin:0; font-size:0.92rem; color:var(--text-sub);">
+        "나와 함께 만들어야 돼. 나는 아무 곳에나 둘 수도 있어, 너는 대칭이 될 수 있도록 놔야돼!"
+      </p>
+      <div style="font-size:0.82rem; color:#ef4444; font-weight:bold; margin-top:4px;" id="sym-fail-counter">
+        실패 횟수: 0회 (협동 성공률: 70%)
       </div>
     </div>
+
+    <div class="palette-row">
+      <button class="piece-btn active" id="p-btn-yellow" onclick="selectPiece('small_tri')">🟡 작은삼각 (1칸)</button>
+      <button class="piece-btn" id="p-btn-blue" onclick="selectPiece('big_tri')">🔵 큰삼각 (2칸)</button>
+      <button class="piece-btn" id="p-btn-green" onclick="selectPiece('rhombus')">🟢 마름모 (4칸)</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <svg id="sym-svg" width="320" height="320" viewBox="0 0 320 320" style="background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); cursor:pointer;"></svg>
+      <div id="sym-feedback" style="font-weight:bold; font-size:0.95rem; min-height:24px; text-align:center;">
+        👉 조각을 선택하고 빨간 대칭축 주변에 놓아보세요!
+      </div>
+      <div id="sym-next-box" class="hidden" style="width:100%;"></div>
+    </div>
+  </div>
+
+  <!-- 스테이지 3: 평행사변형 배틀 -->
+  <div id="stage-battle" class="content-card hidden">
+    <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:var(--text-sub);">
+      <span id="battle-round-tag">👾 몬스터 체력 (1/2단계)</span>
+      <span id="monster-hp-txt">100%</span>
+    </div>
+    <div style="height:14px; background:#e2e8f0; border-radius:8px; overflow:hidden;">
+      <div id="monster-hp-bar" style="height:100%; width:100%; background:#ef4444; transition:width 0.3s;"></div>
+    </div>
+
+    <div style="display:flex; justify-content:center; background:#f8fafc; border-radius:14px; padding:12px; border:1px solid #e2e8f0;">
+      <svg id="geo-svg" width="340" height="150" viewBox="0 0 340 150"></svg>
+    </div>
+
+    <div id="battle-q-text" style="font-size:1.05rem; font-weight:bold; text-align:center;"></div>
+    <div id="battle-opts" class="options-grid"></div>
+    <div id="battle-feedback" style="text-align:center; font-weight:bold; min-height:24px;"></div>
+    <div id="battle-final-box" class="hidden" style="width:100%;"></div>
   </div>
 </div>
 
@@ -209,14 +269,14 @@
 <div id="wrong-note-modal" class="modal-overlay hidden">
   <div class="modal-card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="margin:0; font-size:1.2rem; color:#d97706;">📖 안만두 비밀 오답노트</h2>
+      <h2 style="margin:0; font-size:1.2rem; color:#d97706;">📖 수학 원정대 오답노트</h2>
       <button onclick="closeWrongNoteModal()" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">✕</button>
     </div>
     <div id="wrong-note-list" style="display:flex; flex-direction:column; gap:10px;"></div>
   </div>
 </div>
 
-<!-- 학습관리 모달 -->
+<!-- 선생님 관리 모달 -->
 <div id="teacher-modal" class="modal-overlay hidden">
   <div class="modal-card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -236,225 +296,547 @@
 </div>
 
 <script>
+  let currentStage = 'chat';
   let gasUrl = localStorage.getItem('mandoo_gas_url') || 'https://script.google.com/macros/s/AKfycbxRyWlPe3gNupbf38mDHXtMtsL7QkhPrB4Ex0Y_NYh9q-76MZDl76rQU_CaT-Drh2SC0A/exec';
-  let studyLogs = JSON.parse(localStorage.getItem('mandoo_all_logs') || '[]');
+  let studyLogs = JSON.parse(localStorage.getItem('mandoo_math_logs') || '[]');
 
-  const subjectOrder = ['korean', 'social', 'science', 'english', 'math'];
-  let currentSubject = 'korean';
-  let qIdx = 0;
-
-  const quizDB = {
-    korean: [
-      {
-        type: '속담',
-        q: '작고 하찮은 것이라도 꾸준히 모으면 큰 덩어리가 된다는 뜻의 속담은 무엇일까요?',
-        opts: ['티끌 모아 태산', '소 잃고 외양간 고친다', '가는 말이 고와야 오는 말이 곱다', '돌다리도 두들겨 보고 건너라'],
-        ans: '티끌 모아 태산',
-        explain: '【티끌 모아 태산】은 작은 노력이나 물건이 모여 아주 큰 결과를 만든다는 뜻입니다. (소 잃고 외양간 고친다는 일이 일어난 뒤 후회한다는 뜻이에요.)'
-      },
-      {
-        type: '관용어',
-        q: '어떤 일을 해결하기 위해 매우 적극적으로 앞장설 때 쓰는 관용어는?',
-        opts: ['발을 벗고 나서다', '손을 놓다', '눈에 불을 켜다', '귀를 기울이다'],
-        ans: '발을 벗고 나서다',
-        explain: '【발을 벗고 나서다】는 자기 일처럼 온 힘을 다해 적극적으로 돕는다는 뜻입니다. (손을 놓다는 하던 일을 그만두고 포기한다는 반대 뜻이에요.)'
-      },
-      {
-        type: '사자성어',
-        q: '마음과 마음이 서로 통하여 말을 하지 않아도 서로의 생각을 알 수 있음을 이르는 말은?',
-        opts: ['이심전심 (以心傳心)', '작심삼일 (作心三日)', '동문서답 (東問西答)', '고진감래 (苦盡甘來)'],
-        ans: '이심전심 (以心傳心)',
-        explain: '【이심전심】: 마음에서 마음으로 뜻이 전해진다는 뜻!\n【작심삼일】: 결심한 마음이 사흘(3일)을 가지 못한다는 뜻으로 서로 완전히 달라요.'
-      },
-      {
-        type: '맞춤법',
-        q: '다음 문장에서 밑줄 친 부분의 맞춤법이 올바른 것은?',
-        opts: ['숙제를 먼저 끝내야 돼.', '숙제를 먼저 끝내야 되.', '안 돼는 건 없어.', '그 일은 잘 되서 다행이야.'],
-        ans: '숙제를 먼저 끝내야 돼.',
-        explain: '문장의 맨 끝에는 \'되어\'의 준말인 \'돼\'를 씁니다. \'하\'를 넣었을 때 말이 되면 \'되\', \'해\'를 넣었을 때 말이 되면 \'돼\'를 쓰는 공식이에요! (끝내야 해 -> 돼)'
-      },
-      {
-        type: '띄어쓰기',
-        q: '다음 중 띄어쓰기가 가장 올바른 문장은?',
-        opts: ['배가 부를 만큼 많이 먹었다.', '배가 부를만큼 많이 먹었다.', '너 만큼 잘하는 사람도 드물다.', '만두 만큼 착한 아이.'],
-        ans: '배가 부를 만큼 많이 먹었다.',
-        explain: '\'만큼\' 앞에 꾸며주는 말(부를)이 올 때는 띄어 써야 합니다. (이름 뒤에 붙는 너만큼, 만두만큼은 붙여 씁니다.)'
-      },
-      {
-        type: '조사와 접속사',
-        q: '빈칸에 들어갈 가장 자연스러운 접속 부사와 조사는? "만두는 수학(  ) 잘하고, (  ) 영어도 즐겁게 공부한다."',
-        opts: ['도 / 그리고', '만 / 하지만', '을 / 그러나', '는 / 그런데'],
-        ans: '도 / 그리고',
-        explain: '두 가지 긍정적인 장점을 나란히 이어줄 때는 보조사 \'도\'와 앞뒤 문장을 더해주는 접속사 \'그리고\'가 가장 자연스럽습니다.'
-      }
-    ],
-    social: [
-      {
-        type: '우리 국토',
-        q: '우리나라 영토의 가장 동쪽에 위치한 섬으로, 독도와 함께 동해를 지키는 섬은?',
-        opts: ['울릉도', '제주도', '백령도', '마라도'],
-        ans: '울릉도',
-        explain: '울릉도와 독도는 동해 바다에 위치한 우리나라의 소중한 영토입니다. (마라도는 가장 남쪽 끝 섬입니다.)'
-      },
-      {
-        type: '우리 지형',
-        q: '우리나라 지형의 가장 큰 특징으로, 동쪽은 산이 많고 서쪽은 평야가 많은 형태를 무엇이라 할까요?',
-        opts: ['동고서저', '동저서고', '남고북저', '분지 지형'],
-        ans: '동고서저',
-        explain: '동쪽(태백산맥)이 높고 서쪽으로 갈수록 지형이 낮아져 평야가 펼쳐지는 지형을 \'동고서저\'라고 합니다.'
-      },
-      {
-        type: '민주주의',
-        q: '국민이 나라의 주인이 되어 스스로 권리를 행사하는 정치 형태를 무엇이라 할까요?',
-        opts: ['민주주의', '독재주의', '군주제', '귀족정'],
-        ans: '민주주의',
-        explain: '대한민국 헌법 제1조: 대한민국은 민주공화국이며, 모든 주권은 국민에게서 나옵니다.'
-      }
-    ],
-    science: [
-      {
-        type: '생태계',
-        q: '빛과 이산화탄소를 이용해 광합성을 하여 스스로 양분을 만드는 생물을 무엇이라 할까요?',
-        opts: ['생산자 (식물)', '소비자 (동물)', '분해자 (곰팡이)', '기생생물'],
-        ans: '생산자 (식물)',
-        explain: '식물처럼 스스로 양분을 만드는 생물은 생태계의 \'생산자\'입니다.'
-      },
-      {
-        type: '태양계',
-        q: '태양계 행성 중 태양과 가장 가까우며 표면에 달처럼 운석 구덩이가 많은 행성은?',
-        opts: ['수성', '금성', '지구', '화성'],
-        ans: '수성',
-        explain: '태양에서 가장 가까운 행성은 수성(Mercury)이며 대기가 거의 없어 표면에 운석 구덩이가 많습니다.'
-      },
-      {
-        type: '물질의 상태변화',
-        q: '물이 끓어 수증기(기체)로 변하는 현상을 무엇이라고 부를까요?',
-        opts: ['기화', '응결', '응고', '융해'],
-        ans: '기화',
-        explain: '액체가 열을 얻어 기체로 변하는 상태 변화를 \'기화\'라고 합니다.'
-      }
-    ],
-    english: [
-      {
-        type: 'Past Tense (G4-5)',
-        q: 'Choose the correct past tense verb: "While snorkeling at Hanauma Bay yesterday, we (    ) three sea turtles."',
-        opts: ['saw', 'seen', 'sees', 'have seen'],
-        ans: 'saw',
-        explain: '어제(yesterday) 있었던 과거의 단순한 동작을 나타내므로 불규칙 과거형 \'saw\'가 정답입니다.'
-      },
-      {
-        type: 'Figurative Language (Simile)',
-        q: 'Which of the following sentences contains a "simile"?',
-        opts: ['The island breeze was as gentle as a whisper.', 'The stars were twinkling diamonds.', 'The ocean waves danced in the sunlight.', 'Time flies when you have fun.'],
-        ans: 'The island breeze was as gentle as a whisper.',
-        explain: '\'as ~ as\'나 \'like\'를 써서 두 대상을 직접 빗대어 표현한 문장을 Simile(직유법)이라고 부릅니다.'
-      },
-      {
-        type: 'Subject-Verb Agreement (G4-5)',
-        q: 'Fill in the blank: "Neither of the boys (    ) to miss the championship soccer match."',
-        opts: ['wants', 'want', 'are wanting', 'have wanted'],
-        ans: 'wants',
-        explain: '\'Neither of the 복수명사\'는 3인칭 단수 취급하므로 동사에 -s가 붙은 \'wants\'가 올바릅니다.'
-      }
-    ],
-    math: [
-      {
-        type: '진분수 곱셈',
-        q: '다음 분수의 곱셈을 계산하세요: ( 3/8 ) × ( 4/9 ) = ?',
-        opts: ['1/6', '2/9', '1/12', '4/27'],
-        ans: '1/6',
-        explain: '분자 3과 분모 9를 3으로 약분(1, 3), 분자 4와 분모 8을 4로 약분(1, 2)하면 (1×1)/(2×3) = 1/6이 됩니다.'
-      },
-      {
-        type: '세자리 곱셈',
-        q: '다음 곱셈의 결과는 얼마일까요? 342 × 25 = ?',
-        opts: ['8,550', '8,450', '8,650', '7,550'],
-        ans: '8,550',
-        explain: '342 × 20 = 6,840이고, 342 × 5 = 1,710입니다. 둘을 더하면 6,840 + 1,710 = 8,550입니다.'
-      },
-      {
-        type: '세자리 나눗셈',
-        q: '다음 나눗셈의 몫은 얼마일까요? 896 ÷ 28 = ?',
-        opts: ['32', '31', '28', '34'],
-        ans: '32',
-        explain: '28 × 30 = 840, 896 - 840 = 56입니다. 56 ÷ 28 = 2이므로 몫은 32가 됩니다.'
-      }
-    ]
-  };
-
-  function selectSubject(sub) {
-    currentSubject = sub;
-    qIdx = 0;
-    document.querySelectorAll('#subject-tabs .tab-btn').forEach((b, i) => {
-      b.classList.toggle('active', subjectOrder[i] === sub);
-    });
-    document.getElementById('all-clear-card').classList.add('hidden');
-    document.getElementById('quiz-card').classList.remove('hidden');
-    renderQuestion();
+  function renderFrac(whole, num, den) {
+    let html = '<span class="math-frac">';
+    if (whole !== null && whole !== undefined && whole !== '') {
+      html += `<span class="whole">${whole}</span>`;
+    }
+    html += `<span class="frac-box"><span class="num">${num}</span><span class="bar"></span><span class="den">${den}</span></span></span>`;
+    return html;
   }
 
-  function renderQuestion() {
-    const list = quizDB[currentSubject];
-    const q = list[qIdx];
-    document.getElementById('quiz-progress-tag').innerText = `문제 ${qIdx + 1}/${list.length}`;
-    document.getElementById('quiz-score-tag').innerText = `과목: ${currentSubject.toUpperCase()}`;
-    document.getElementById('q-sub-type').innerText = `[${q.type}]`;
-    document.getElementById('q-text').innerText = q.q;
-    document.getElementById('q-feedback').innerText = '';
-    document.getElementById('next-action-area').classList.add('hidden');
+  function switchStage(stage) {
+    currentStage = stage;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + stage).classList.add('active');
 
-    const optBox = document.getElementById('q-options');
-    optBox.innerHTML = '';
+    document.getElementById('stage-chat').classList.add('hidden');
+    document.getElementById('stage-sym').classList.add('hidden');
+    document.getElementById('stage-battle').classList.add('hidden');
+    document.getElementById('stage-' + stage).classList.remove('hidden');
+
+    if (stage === 'sym') initSymGame();
+    if (stage === 'battle') loadBattleQuestion();
+  }
+
+  let chatStep = 0;
+  let selectedCuts = [];
+  let chatCombo = 0;
+
+  const chatQuests = [
+    {
+      speaker: '🚀 우주비행사 루카',
+      text: `만두야 반가워! 우주복 무게는 지구에서 80 kg이야. 화성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 19, 50)}배래. 화성에서 잰 우주복의 무게는 얼마일까?`,
+      tip: `80 kg을 똑같이 50등분한 것 중 19묶음이라는 뜻이에요!`,
+      extraHint: `80 × 19/50 식을 세우고 분모와 분자를 10으로 약분해 보세요!`,
+      opts: [`${renderFrac(30, 2, 5)} kg`, `${renderFrac(32, 1, 5)} kg`, `${renderFrac(28, 4, 5)} kg`, `${renderFrac(30, 4, 5)} kg`],
+      ans: `${renderFrac(30, 2, 5)} kg`,
+      explain: `80 × 19/50 = (8 × 19)/5 = 152/5 = 30과 2/5 kg이 됩니다.`
+    },
+    {
+      speaker: '🚀 우주비행사 루카',
+      text: `이번에는 금성으로 가보자! 금성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 91, 100)}배래. 지구에서 80 kg인 우주복은 금성에서 몇 kg일까?`,
+      tip: `80 kg에 금성의 중력 비율을 곱해 보세요.`,
+      extraHint: `80 × 91/100 식을 세운 뒤 80과 100을 20으로 약분해 보세요!`,
+      opts: [`${renderFrac(72, 4, 5)} kg`, `${renderFrac(70, 2, 5)} kg`, `${renderFrac(74, 1, 5)} kg`, `${renderFrac(71, 3, 5)} kg`],
+      ans: `${renderFrac(72, 4, 5)} kg`,
+      explain: `80 × 91/100 = (4 × 91)/5 = 364/5 = 72와 4/5 kg이 됩니다.`
+    },
+    {
+      speaker: '🚀 우주비행사 루카',
+      text: `우주선에 전력을 공급할 직사각형 태양광 전지판을 조립해야 해. 가로가 ${renderFrac(1, 1, 3)} m이고 세로가 ${renderFrac(2, 3, 8)} m일 때 넓이는 얼마일까?`,
+      tip: `직사각형 넓이 = 가로 × 세로. 대분수를 가분수로 고쳐 계산하세요!`,
+      extraHint: `4/3 × 19/8 식을 세우고 4와 8을 먼저 약분해 보세요!`,
+      opts: [`${renderFrac(3, 1, 6)} m²`, `${renderFrac(3, 1, 3)} m²`, `${renderFrac(2, 5, 6)} m²`, `${renderFrac(3, 1, 2)} m²`],
+      ans: `${renderFrac(3, 1, 6)} m²`,
+      explain: `(4/3) × (19/8) = 19/6 = 3과 1/6 m²입니다.`
+    },
+    {
+      speaker: '🍳 셰프 한',
+      text: `만두 조수, 어서 와요! 15 kg 포대에 설탕이 9 kg 남아있어요. 이 중 ${renderFrac(null, 4, 9)}를 사용해 딸기잼을 만들려고 해요. 설탕은 몇 kg일까요?`,
+      tip: `남아있는 9 kg을 9등분한 것 중 4묶음이에요!`,
+      extraHint: `식: 9 × 4/9 로 바로 계산해 보세요!`,
+      opts: ['3 kg', '4 kg', '5 kg', `${renderFrac(4, 1, 2)} kg`],
+      ans: '4 kg',
+      explain: `9 × 4/9 = 4 kg입니다.`
+    },
+    {
+      speaker: '🍳 셰프 한',
+      text: `딸기잼을 만들고 남은 설탕은 5 kg이에요. 이제 이 남은 설탕의 ${renderFrac(null, 5, 6)}로 상큼한 레몬청을 만들려고 해요. 설탕은 몇 kg일까요?`,
+      tip: `남은 5 kg에 5/6를 곱해보세요!`,
+      extraHint: `식: 5 × 5/6 = 25/6 을 대분수로 바꿔보세요!`,
+      opts: [`${renderFrac(4, 1, 6)} kg`, `${renderFrac(4, 1, 3)} kg`, `${renderFrac(3, 5, 6)} kg`, `${renderFrac(4, 5, 6)} kg`],
+      ans: `${renderFrac(4, 1, 6)} kg`,
+      explain: `5 × 5/6 = 25/6 = 4와 1/6 kg입니다.`
+    },
+    {
+      speaker: '🍳 셰프 한',
+      text: `넓이가 12 m²인 직사각형 텃밭에서 파를 텃밭 전체의 ${renderFrac(null, 5, 8)}만큼 심었고, 배추는 파 넓이의 ${renderFrac(null, 2, 5)}만큼 심었대요. 배추 넓이는 몇 m²일까요?`,
+      tip: `12 m²에 두 분수를 차례대로 곱해보세요!`,
+      extraHint: `12 × 5/8 × 2/5 식에서 약분을 먼저 해보세요!`,
+      opts: ['2 m²', '3 m²', '4 m²', `${renderFrac(3, 1, 2)} m²`],
+      ans: '3 m²',
+      explain: `12 × (5/8) × (2/5) = 12 × 1/4 = 3 m²입니다.`
+    },
+    {
+      speaker: '👧 단짝 친구 채윤이',
+      text: `만두야! 우리가 체험관에서 관람할 수 있는 순수 시간은 총 4시간이래. 1시간이 60분이니까 4시간은 총 몇 분일까?`,
+      tip: `60 × 4를 계산해보세요!`,
+      extraHint: `60분씩 4번 더하면 얼마일까요?`,
+      opts: ['180분', '200분', '240분', '300분'],
+      ans: '240분',
+      explain: `60 × 4 = 240분입니다.`
+    },
+    {
+      speaker: '👧 단짝 친구 채윤이',
+      type: 'bar_split',
+      text: `우와 맞아! 총 240분이야. 그런데 ㉮구역은 4시간 중 딱 ${renderFrac(null, 1, 3)}만 관람할 수 있대. 240분을 3묶음으로 똑같이 나누려면 몇 분, 몇 분 지점을 잘라야 할까?`,
+      tip: `240 ÷ 3 = 80분이에요!`,
+      extraHint: `첫 번째는 80분, 두 번째는 160분 지점이에요!`,
+      explain: `240분을 3등분하면 한 조각당 80분이므로, 80분과 160분 지점을 잘라야 합니다.`
+    },
+    {
+      speaker: '👧 단짝 친구 채윤이',
+      text: `좋았어! 한 묶음이 80분인 걸 찾았네! 그러면 80분은 몇 시간 몇 분일까?`,
+      tip: `60분은 1시간이에요. 80분에서 60분을 빼보세요!`,
+      extraHint: `80분 = 60분(1시간) + 20분!`,
+      opts: ['1시간 10분', `1시간 20분 (${renderFrac(1, 1, 3)}시간)`, '1시간 30분', `1시간 40분 (${renderFrac(1, 2, 3)}시간)`],
+      ans: `1시간 20분 (${renderFrac(1, 1, 3)}시간)`,
+      explain: `80분은 60분(1시간)과 20분이므로 1시간 20분(= 1과 1/3시간)입니다.`
+    },
+    {
+      speaker: '👧 단짝 친구 채윤이',
+      type: 'timetable_choice',
+      text: `우리가 오전 10시 10분에 ㉮구역 체험관에 들어간대. 1시간 20분 동안 관람한다면 몇 시 몇 분에 점심 먹으러 모이면 될까?`,
+      tip: `10시 10분에 1시간 20분을 더해보세요!`,
+      extraHint: `10시 + 1시간 = 11시, 10분 + 20분 = 30분!`,
+      opts: ['오전 11시 10분', '오전 11시 20분', '오전 11시 30분', '오전 11시 40분'],
+      ans: '오전 11시 30분',
+      explain: `10시 10분 + 1시간 20분 = 11시 30분입니다.`
+    }
+  ];
+
+  function renderChatQuest() {
+    const container = document.getElementById('chat-body');
+    container.innerHTML = '';
+
+    if (chatStep >= chatQuests.length) {
+      container.innerHTML = `
+        <div class="next-stage-banner">
+          <div style="font-size:2.5rem;">🏆</div>
+          <h3>우주·셰프·여행 3대 탐구 미션 완전 정복!</h3>
+          <p>안만두 학생, 정말 대단해요! 10개의 복잡한 분수와 시간 계획을 스스로 멋지게 풀어냈습니다.</p>
+          <div style="display:flex; gap:10px;">
+            <button class="next-stage-btn" onclick="switchStage('sym')">🧩 2단계: 선대칭 모눈 퍼즐 도전하기 👉</button>
+            <button class="next-stage-btn" style="background:#f59e0b;" onclick="openWrongNoteModal()">📖 오답노트를 클릭해 봐!</button>
+          </div>
+        </div>
+      `;
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      return;
+    }
+
+    const q = chatQuests[chatStep];
+    document.getElementById('chat-progress-tag').innerText = `🚀 사고력 탐사 (${chatStep + 1}/${chatQuests.length})`;
+    document.getElementById('chat-score-tag').innerText = `🔥 콤보: ${chatCombo}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+    bubble.innerHTML = `<div class="chat-speaker">${q.speaker}</div><div class="chat-text">${q.text}</div>`;
+    container.appendChild(bubble);
+
+    const tip = document.createElement('div');
+    tip.className = 'tip-box';
+    tip.innerHTML = `💡 <b>생각 열기:</b> ${q.tip}`;
+    container.appendChild(tip);
+
+    const hintBtn = document.createElement('button');
+    hintBtn.className = 'extra-hint-btn';
+    hintBtn.innerText = '💡 힌트 추가?';
+    hintBtn.onclick = () => document.getElementById('extra-hint-box').classList.toggle('hidden');
+    container.appendChild(hintBtn);
+
+    const hintBox = document.createElement('div');
+    hintBox.id = 'extra-hint-box';
+    hintBox.className = 'extra-hint-content hidden';
+    hintBox.innerHTML = `📌 <b>부분 힌트:</b> ${q.extraHint}`;
+    container.appendChild(hintBox);
+
+    if (q.type === 'bar_split') {
+      selectedCuts = [];
+      const barDiv = document.createElement('div');
+      barDiv.className = 'bar-split-container';
+      barDiv.innerHTML = `
+        <div style="font-size:0.88rem; font-weight:bold; color:var(--text-sub);">총 240분 막대 (2곳을 선택해 3등분해 보세요)</div>
+        <div class="bar-wrapper">
+          <div class="bar-seg" style="background:#fef3c7;">40분</div>
+          <div class="bar-seg" style="background:#fef3c7;">80분</div>
+          <div class="bar-seg" style="background:#e0e7ff;">120분</div>
+          <div class="bar-seg" style="background:#e0e7ff;">160분</div>
+          <div class="bar-seg" style="background:#dcfce7;">200분</div>
+          <div class="bar-seg" style="background:#dcfce7;">240분</div>
+        </div>
+        <div class="cut-arrow-row">
+          <button class="cut-point-btn" id="cut-40" onclick="toggleCut(40)">40분 지점</button>
+          <button class="cut-point-btn" id="cut-80" onclick="toggleCut(80)">80분 지점</button>
+          <button class="cut-point-btn" id="cut-120" onclick="toggleCut(120)">120분 지점</button>
+          <button class="cut-point-btn" id="cut-160" onclick="toggleCut(160)">160분 지점</button>
+          <button class="cut-point-btn" id="cut-200" onclick="toggleCut(200)">200분 지점</button>
+        </div>
+        <button class="next-stage-btn" style="align-self:center; margin-top:8px;" onclick="checkBarSplit()">자르기 확인 ✂️</button>
+        <div id="cut-feedback" style="text-align:center; font-weight:bold; min-height:20px;"></div>
+      `;
+      container.appendChild(barDiv);
+      return;
+    }
+
+    if (q.type === 'timetable_choice') {
+      const tt = document.createElement('div');
+      tt.className = 'timetable-card';
+      tt.innerHTML = `
+        <div style="font-weight:bold; margin-bottom:8px; color:#334155;">🗓️ 우리 모둠 현장 체험 계획표</div>
+        <div class="timetable-row"><span>오전 09:30 ~ 10:10</span> <span>직업체험관 이동 (40분)</span></div>
+        <div class="timetable-row" style="background:#eff6ff; border-radius:6px; padding:6px;">
+          <span class="time-slot">오전 10:10 ~ [ ❓시 ❓분 ]</span> <span style="font-weight:bold; color:#1d4ed8;">㉮구역 체험 (1시간 20분)</span>
+        </div>
+        <div class="timetable-row"><span class="time-slot">[ ❓시 ❓분 ] ~ 12:30</span> <span>점심 식사 (1시간)</span></div>
+        <div class="timetable-row"><span>오후 12:30 ~ 03:10</span> <span>㉯구역 체험 (2시간 40분)</span></div>
+      `;
+      container.appendChild(tt);
+    }
+
+    const optGrid = document.createElement('div');
+    optGrid.className = 'options-grid';
     q.opts.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'opt-btn';
-      btn.innerText = opt;
-      btn.onclick = () => checkAnswer(opt, q);
-      optBox.appendChild(btn);
+      btn.innerHTML = opt;
+      btn.onclick = () => checkChatAnswer(opt, q);
+      optGrid.appendChild(btn);
     });
+    container.appendChild(optGrid);
+
+    const fb = document.createElement('div');
+    fb.id = 'chat-feedback';
+    fb.style.textAlign = 'center';
+    fb.style.fontWeight = 'bold';
+    fb.style.minHeight = '24px';
+    container.appendChild(fb);
   }
 
-  function checkAnswer(chosen, q) {
-    const isCorrect = (chosen === q.ans);
-    const fb = document.getElementById('q-feedback');
-    const nextArea = document.getElementById('next-action-area');
+  function toggleCut(val) {
+    const btn = document.getElementById('cut-' + val);
+    if (selectedCuts.includes(val)) {
+      selectedCuts = selectedCuts.filter(v => v !== val);
+      btn.classList.remove('selected');
+    } else {
+      if (selectedCuts.length >= 2) return;
+      selectedCuts.push(val);
+      btn.classList.add('selected');
+    }
+  }
 
-    // 상세 오답/정답 해설 로깅
-    logResult(currentSubject, q.type + ': ' + q.q, chosen, q.ans, isCorrect, q.explain);
+  function checkBarSplit() {
+    const fb = document.getElementById('cut-feedback');
+    const sorted = [...selectedCuts].sort((a,b) => a - b);
+    const isCorrect = (sorted.length === 2 && sorted[0] === 80 && sorted[1] === 160);
+
+    logResult('사고력수학', '막대 3등분 지점 찾기', sorted.join(', '), '80, 160', isCorrect, '240분을 3등분하면 80분씩이므로 80분과 160분을 잘라야 합니다.');
+
+    if (isCorrect) {
+      confetti({ particleCount: 50, spread: 60 });
+      chatCombo++;
+      fb.style.color = '#10b981';
+      fb.innerText = '정답이야! 80분, 160분을 자르면 80분씩 3묶음으로 딱 나뉘어! 👏';
+      setTimeout(() => { chatStep++; renderChatQuest(); }, 1400);
+    } else {
+      chatCombo = 0;
+      fb.style.color = '#ef4444';
+      fb.innerText = '다시 확인해 볼까? 240분을 3으로 나누면 한 묶음에 몇 분일까?';
+    }
+  }
+
+  function checkChatAnswer(selected, q) {
+    const fb = document.getElementById('chat-feedback');
+    const isCorrect = (selected === q.ans);
+
+    logResult('사고력수학', q.speaker + ' 미션', selected.replace(/<[^>]*>?/gm, ''), q.ans.replace(/<[^>]*>?/gm, ''), isCorrect, q.explain);
 
     if (isCorrect) {
       confetti({ particleCount: 40, spread: 50 });
+      chatCombo++;
       fb.style.color = '#10b981';
-      fb.innerText = '⭕ 정답입니다! 훌륭해요!';
+      fb.innerText = '정답입니다! 완벽해요! ✨';
+      setTimeout(() => { chatStep++; renderChatQuest(); }, 1200);
     } else {
+      chatCombo = 0;
       fb.style.color = '#ef4444';
-      fb.innerText = '❌ 아쉬워요! 오답노트에 자동 저장되었습니다.';
+      fb.innerText = '아쉬워요! 생각 열기와 부분 힌트를 다시 확인해 보세요.';
+    }
+  }
+
+  /* 2. 선대칭 모눈 퍼즐 */
+  let currentPieceType = 'small_tri';
+  let gridState = Array(4).fill(null).map(() => Array(4).fill(null).map(() => ({ T: null, R: null, B: null, L: null })));
+  let symFailCount = 0;
+
+  function selectPiece(type) {
+    currentPieceType = type;
+    document.querySelectorAll('.piece-btn').forEach(b => b.classList.remove('active'));
+    if (type === 'small_tri') document.getElementById('p-btn-yellow').classList.add('active');
+    if (type === 'big_tri') document.getElementById('p-btn-blue').classList.add('active');
+    if (type === 'rhombus') document.getElementById('p-btn-green').classList.add('active');
+  }
+
+  function initSymGame() {
+    gridState = Array(4).fill(null).map(() => Array(4).fill(null).map(() => ({ T: null, R: null, B: null, L: null })));
+    document.getElementById('sym-next-box').classList.add('hidden');
+    document.getElementById('sym-feedback').innerText = '👉 조각을 선택하고 빨간 대칭축 주변에 놓아보세요!';
+    document.getElementById('sym-feedback').style.color = 'var(--text)';
+    renderSymSVG();
+  }
+
+  function renderSymSVG() {
+    const svg = document.getElementById('sym-svg');
+    svg.innerHTML = '';
+    const S = 80;
+
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        const x = c * S, y = r * S;
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x); rect.setAttribute('y', y);
+        rect.setAttribute('width', S); rect.setAttribute('height', S);
+        rect.setAttribute('fill', 'none'); rect.setAttribute('stroke', '#cbd5e1');
+        svg.appendChild(rect);
+
+        const d1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        d1.setAttribute('x1', x); d1.setAttribute('y1', y); d1.setAttribute('x2', x + S); d1.setAttribute('y2', y + S);
+        d1.setAttribute('stroke', '#e2e8f0');
+        svg.appendChild(d1);
+
+        const d2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        d2.setAttribute('x1', x + S); d2.setAttribute('y1', y); d2.setAttribute('x2', x); d2.setAttribute('y2', y + S);
+        d2.setAttribute('stroke', '#e2e8f0');
+        svg.appendChild(d2);
+
+        ['T','R','B','L'].forEach(sub => {
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          let pts = '';
+          const cx = x + S/2, cy = y + S/2;
+          if (sub === 'T') pts = `${x},${y} ${x+S},${y} ${cx},${cy}`;
+          if (sub === 'R') pts = `${x+S},${y} ${x+S},${y+S} ${cx},${cy}`;
+          if (sub === 'B') pts = `${x+S},${y+S} ${x},${y+S} ${cx},${cy}`;
+          if (sub === 'L') pts = `${x},${y+S} ${x},${y} ${cx},${cy}`;
+          
+          path.setAttribute('points', pts);
+          const color = gridState[r][c][sub];
+          path.setAttribute('fill', color ? color : 'transparent');
+          path.setAttribute('stroke', color ? '#1e293b' : 'none');
+          path.setAttribute('stroke-width', color ? '1.5' : '0');
+          path.style.cursor = 'pointer';
+          path.onclick = () => onCellClick(r, c, sub);
+          svg.appendChild(path);
+        });
+      }
     }
 
+    const symLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    symLine.setAttribute('x1', 160); symLine.setAttribute('y1', 0); symLine.setAttribute('x2', 160); symLine.setAttribute('y2', 320);
+    symLine.setAttribute('stroke', '#ef4444'); symLine.setAttribute('stroke-width', '4');
+    svg.appendChild(symLine);
+  }
+
+  function onCellClick(r, c, sub) {
+    if (gridState[r][c][sub]) return;
+
+    if (currentPieceType === 'small_tri') {
+      gridState[r][c][sub] = '#f59e0b';
+    } else if (currentPieceType === 'big_tri') {
+      const neighbor = (sub === 'T') ? 'R' : (sub === 'R') ? 'B' : (sub === 'B') ? 'L' : 'T';
+      if (gridState[r][c][neighbor]) {
+        alert('이곳에는 큰 삼각형(2칸)을 온전히 놓을 수 없어요!');
+        return;
+      }
+      gridState[r][c][sub] = '#2563eb';
+      gridState[r][c][neighbor] = '#2563eb';
+    } else if (currentPieceType === 'rhombus') {
+      if (gridState[r][c].T || gridState[r][c].R || gridState[r][c].B || gridState[r][c].L) {
+        alert('이곳에는 마름모(4칸)를 온전히 놓을 수 없어요!');
+        return;
+      }
+      gridState[r][c].T = '#10b981'; gridState[r][c].R = '#10b981';
+      gridState[r][c].B = '#10b981'; gridState[r][c].L = '#10b981';
+    }
+
+    renderSymSVG();
+
     setTimeout(() => {
-      if (qIdx + 1 < quizDB[currentSubject].length) {
-        qIdx++;
-        renderQuestion();
-      } else {
-        // 과목 완주
-        const nextSubIdx = subjectOrder.indexOf(currentSubject) + 1;
-        if (nextSubIdx < subjectOrder.length) {
-          const nextSubName = subjectOrder[nextSubIdx];
-          const korMap = { social: '사회', science: '과학', english: '영어', math: '수학연산' };
-          nextArea.classList.remove('hidden');
-          nextArea.innerHTML = `
-            <button class="action-btn btn-next" style="width:100%; justify-content:center;" onclick="selectSubject('${nextSubName}')">
-              다음 과목 [${korMap[nextSubName]}]으로 넘어가기 👉
-            </button>
-          `;
-        } else {
-          // 전과목 완주
-          document.getElementById('quiz-card').classList.add('hidden');
-          document.getElementById('all-clear-card').classList.remove('hidden');
-          confetti({ particleCount: 90, spread: 70 });
+      computerMove(r, c, sub);
+      renderSymSVG();
+      checkSymmetryState();
+    }, 400);
+  }
+
+  function computerMove(userR, userC, userSub) {
+    const successProb = Math.min(0.95, 0.70 + symFailCount * 0.08);
+    const mirrorC = 3 - userC;
+    const mirrorSub = (userSub === 'L') ? 'R' : (userSub === 'R') ? 'L' : userSub;
+
+    if (Math.random() < successProb) {
+      if (currentPieceType === 'small_tri' && !gridState[userR][mirrorC][mirrorSub]) {
+        gridState[userR][mirrorC][mirrorSub] = '#f59e0b';
+      } else if (currentPieceType === 'big_tri') {
+        const neighbor = (mirrorSub === 'T') ? 'L' : (mirrorSub === 'L') ? 'B' : (mirrorSub === 'B') ? 'R' : 'T';
+        if (!gridState[userR][mirrorC][mirrorSub] && !gridState[userR][mirrorC][neighbor]) {
+          gridState[userR][mirrorC][mirrorSub] = '#2563eb';
+          gridState[userR][mirrorC][neighbor] = '#2563eb';
+        }
+      } else if (currentPieceType === 'rhombus') {
+        if (!gridState[userR][mirrorC].T && !gridState[userR][mirrorC].R && !gridState[userR][mirrorC].B && !gridState[userR][mirrorC].L) {
+          gridState[userR][mirrorC].T = '#10b981'; gridState[userR][mirrorC].R = '#10b981';
+          gridState[userR][mirrorC].B = '#10b981'; gridState[userR][mirrorC].L = '#10b981';
         }
       }
-    }, 1100);
+    }
+  }
+
+  function checkSymmetryState() {
+    let filled = 0, isSym = true;
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 2; c++) {
+        const mirrorC = 3 - c;
+        ['T','R','B','L'].forEach(sub => {
+          const leftColor = gridState[r][c][sub];
+          const mirrorSub = (sub === 'L') ? 'R' : (sub === 'R') ? 'L' : sub;
+          const rightColor = gridState[r][mirrorC][mirrorSub];
+          if (leftColor) filled++;
+          if (rightColor) filled++;
+          if ((leftColor && !rightColor) || (!leftColor && rightColor) || (leftColor && rightColor && leftColor !== rightColor)) {
+            isSym = false;
+          }
+        });
+      }
+    }
+
+    const fb = document.getElementById('sym-feedback');
+    const nextBox = document.getElementById('sym-next-box');
+
+    if (filled >= 8 && isSym) {
+      confetti({ particleCount: 60, spread: 60 });
+      fb.style.color = '#10b981';
+      fb.innerText = '🎉 최고야! 빨간선을 기준으로 완벽한 대칭을 만들었어!';
+      nextBox.classList.remove('hidden');
+      nextBox.innerHTML = `
+        <button class="next-stage-btn" style="width:100%; justify-content:center;" onclick="switchStage('battle')">
+          ⚔️ 3단계: 평행사변형 배틀 도전하기 👉
+        </button>
+      `;
+      logResult('사고력수학', '선대칭 퍼즐 완성', '완벽 대칭 성공', '선대칭', true, '빨간 대칭축을 중심으로 양쪽 모형이 정확히 포개어집니다.');
+    } else if (!isSym && filled >= 12) {
+      symFailCount++;
+      document.getElementById('sym-fail-counter').innerText = `실패 횟수: ${symFailCount}회 (협동 성공률: ${Math.round(Math.min(0.95, 0.70 + symFailCount * 0.08)*100)}%)`;
+      fb.style.color = '#ef4444';
+      fb.innerText = '아쉽지만 다음 기회에... 대칭이 어긋났어요!';
+      nextBox.classList.remove('hidden');
+      nextBox.innerHTML = `<button class="opt-btn" style="width:100%;" onclick="initSymGame()">🔄 다시 재도전하기</button>`;
+    }
+  }
+
+  /* 3. 평행사변형 배틀 */
+  let monsterHp = 100;
+  let battleIdx = 0;
+  const battleQuestions = [
+    {
+      q: `밑변이 ${renderFrac(3, 3, 4)} cm, 높이가 ${renderFrac(2, 2, 5)} cm인 이 평행사변형의 넓이는 얼마일까요?`,
+      opts: ['8 cm²', '9 cm²', `${renderFrac(10, 1, 2)} cm²`, `${renderFrac(9, 1, 4)} cm²`],
+      ans: '9 cm²',
+      explain: `평행사변형 넓이 = 밑변 × 높이 = (15/4) × (12/5) = 180/20 = 9 cm²입니다.`,
+      svg: `
+        <polygon points="50,110 230,110 290,40 110,40" fill="#fef3c7" stroke="#d97706" stroke-width="2.5" />
+        <line x1="110" y1="40" x2="110" y2="110" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
+        <path d="M 110 100 L 120 100 L 120 110" fill="none" stroke="#ef4444" stroke-width="1.5" />
+        <line x1="50" y1="125" x2="230" y2="125" stroke="#475569" stroke-width="1.5" />
+        <text x="140" y="142" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 3 3/4 cm</text>
+        <text x="75" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 2 2/5 cm</text>
+      `
+    },
+    {
+      q: `밑변이 ${renderFrac(4, 1, 6)} cm, 높이가 ${renderFrac(3, 3, 5)} cm인 이 평행사변형의 넓이는 얼마일까요?`,
+      opts: ['12 cm²', '14 cm²', '15 cm²', `${renderFrac(16, 1, 2)} cm²`],
+      ans: '15 cm²',
+      explain: `(25/6) × (18/5) = (5 × 3) / 1 = 15 cm²입니다.`,
+      svg: `
+        <polygon points="40,115 220,115 285,35 105,35" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2.5" />
+        <line x1="105" y1="35" x2="105" y2="115" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
+        <path d="M 105 105 L 115 105 L 115 115" fill="none" stroke="#ef4444" stroke-width="1.5" />
+        <line x1="40" y1="130" x2="220" y2="130" stroke="#475569" stroke-width="1.5" />
+        <text x="130" y="145" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 4 1/6 cm</text>
+        <text x="70" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 3 3/5 cm</text>
+      `
+    }
+  ];
+
+  function loadBattleQuestion() {
+    if (battleIdx >= battleQuestions.length) {
+      document.getElementById('battle-round-tag').innerText = `🏆 완벽 마스터!`;
+      document.getElementById('monster-hp-txt').innerText = `0%`;
+      document.getElementById('monster-hp-bar').style.width = `0%`;
+      document.getElementById('battle-q-text').innerText = `축하합니다! 몬스터를 물리치고 오늘 사고력 수학을 완벽히 마스터했습니다! 🏆`;
+      document.getElementById('battle-opts').innerHTML = '';
+      document.getElementById('battle-feedback').innerHTML = '';
+      document.getElementById('battle-final-box').classList.remove('hidden');
+      document.getElementById('battle-final-box').innerHTML = `
+        <div style="display:flex; gap:10px; justify-content:center;">
+          <button class="next-stage-btn" style="background:#f59e0b;" onclick="openWrongNoteModal()">📖 오답노트를 클릭해 봐!</button>
+          <button class="next-stage-btn" onclick="openTeacherModal()">📋 오늘의 성취도 리포트 👉</button>
+        </div>
+      `;
+      confetti({ particleCount: 100, spread: 80 });
+      return;
+    }
+
+    const q = battleQuestions[battleIdx];
+    document.getElementById('battle-round-tag').innerText = `👾 몬스터 체력 (${battleIdx + 1}/2단계)`;
+    document.getElementById('monster-hp-txt').innerText = `${monsterHp}%`;
+    document.getElementById('monster-hp-bar').style.width = `${monsterHp}%`;
+    document.getElementById('battle-q-text').innerHTML = q.q;
+    document.getElementById('geo-svg').innerHTML = q.svg;
+    document.getElementById('battle-feedback').innerText = '';
+
+    const container = document.getElementById('battle-opts');
+    container.innerHTML = '';
+    q.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.innerHTML = opt;
+      btn.onclick = () => {
+        const isCorrect = (opt === q.ans);
+        const fb = document.getElementById('battle-feedback');
+        logResult('사고력수학', `평행사변형 넓이 ${battleIdx + 1}단계`, opt.replace(/<[^>]*>?/gm, ''), q.ans.replace(/<[^>]*>?/gm, ''), isCorrect, q.explain);
+
+        if (isCorrect) {
+          confetti({ particleCount: 60, spread: 60 });
+          monsterHp = Math.max(0, monsterHp - 50);
+          document.getElementById('monster-hp-bar').style.width = `${monsterHp}%`;
+          document.getElementById('monster-hp-txt').innerText = `${monsterHp}%`;
+          fb.style.color = '#10b981';
+          fb.innerText = '정답입니다! 몬스터에게 큰 타격을 주었어요! 💥';
+          setTimeout(() => {
+            battleIdx++;
+            loadBattleQuestion();
+          }, 1300);
+        } else {
+          fb.style.color = '#ef4444';
+          fb.innerText = '아쉬워요! 밑변 × 높이를 대분수에서 가분수로 고쳐 계산해보세요.';
+        }
+      };
+      container.appendChild(btn);
+    });
   }
 
   function logResult(subject, qName, userAns, correctAns, isCorrect, explain) {
@@ -463,7 +845,7 @@
       subject, qName, userAns, correctAns, isCorrect, explain
     };
     studyLogs.unshift(record);
-    localStorage.setItem('mandoo_all_logs', JSON.stringify(studyLogs));
+    localStorage.setItem('mandoo_math_logs', JSON.stringify(studyLogs));
 
     if (gasUrl) {
       fetch(gasUrl, {
@@ -475,9 +857,9 @@
   }
 
   function clearLogs() {
-    if (confirm('지금까지의 테스트 학습 데이터를 모두 삭제할까요?')) {
+    if (confirm('지금까지의 테스트 데이터를 모두 삭제할까요?')) {
       studyLogs = [];
-      localStorage.removeItem('mandoo_all_logs');
+      localStorage.removeItem('mandoo_math_logs');
       renderLogs();
       alert('데이터가 초기화되었습니다.');
     }
@@ -490,13 +872,13 @@
     if (wrongList.length === 0) {
       box.innerHTML = '<div style="text-align:center; padding:20px; color:#10b981; font-weight:bold;">🎉 틀린 문제가 없어요! 완벽하게 마스터했습니다!</div>';
     } else {
-      box.innerHTML = wrongList.map((item, idx) => `
+      box.innerHTML = wrongList.map(item => `
         <div class="note-card">
           <div style="font-weight:bold; color:#b45309;">📌 [${item.subject}] ${item.qName}</div>
           <div style="font-size:0.92rem; color:#ef4444;">❌ 내가 고른 답: <b>${item.userAns}</b></div>
           <div style="font-size:0.92rem; color:#10b981;">⭕ 실제 정답: <b>${item.correctAns}</b></div>
           <div style="background:#fefce8; padding:8px 10px; border-radius:8px; font-size:0.85rem; color:#854d0e; line-height:1.4;">
-            💡 <b>핵심 해설:</b> ${item.explain || '개념을 다시 한번 확인해 보세요!'}
+            💡 <b>핵심 해설:</b> ${item.explain || '풀이 공식을 다시 점검해 보세요.'}
           </div>
         </div>
       `).join('');
@@ -538,7 +920,7 @@
     `).join('');
   }
 
-  selectSubject('korean');
+  renderChatQuest();
 </script>
 </body>
 </html>
