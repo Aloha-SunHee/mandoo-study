@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>안만두 사고력 수학 탐구 원정대</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;700;900&display=swap');
+    
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #e0e7ff 0%, #fef3c7 50%, #fce7f3 100%);
+      min-height: 100vh;
+      user-select: none;
+    }
+    .font-jua { font-family: 'Jua', sans-serif; }
+
+    /* 교과서 표준 가로줄 분수 스타일 */
+    .math-fraction {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 0.25rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .math-fraction .whole-num {
+      font-size: 1.35em;
+      margin-right: 0.22rem;
+      color: #1e1b4b;
+    }
+    .math-fraction .frac-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      min-width: 1.1em;
+    }
+    .math-fraction .frac-num {
+      display: block;
+      text-align: center;
+      padding: 0 0.15rem 0.08rem 0.15rem;
+      font-size: 0.95em;
+      color: #312e81;
+    }
+    .math-fraction .frac-line {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background-color: #1e293b;
+      border-radius: 1px;
+      margin: 1px 0;
+    }
+    .math-fraction .frac-denom {
+      display: block;
+      text-align: center;
+      padding: 0.08rem 0.15rem 0 0.15rem;
+      font-size: 0.95em;
+      color: #312e81;
+    }
+
+    .shadow-soft {
+      box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.15), 0 8px 10px -6px rgba(99, 102, 241, 0.08);
+    }
+    .animate-wiggle {
+      animation: wiggle 2.5s ease-in-out infinite;
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+    .chat-bubble-enter {
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="p-3 sm:p-6 text-slate-800 flex flex-col items-center">
+
+  <!-- HEADER -->
+  <header class="w-full max-w-5xl bg-white/95 backdrop-blur-md rounded-3xl p-4 sm:p-5 shadow-soft border border-white/80 mb-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-200 flex items-center justify-center text-3xl shadow-md animate-wiggle">
+          🥟
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-jua text-xl sm:text-2xl text-indigo-950">안만두 사고력 수학 원정대</h1>
+            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full">주 2회 심화 탐구 세트</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">대화형 실생활 퀘스트 & 선대칭 모눈종이 챌린지</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-2xl flex items-center gap-2">
+          <span class="text-amber-500 text-lg">⭐</span>
+          <div>
+            <span class="text-[10px] text-amber-700 block font-bold leading-none">학습 별</span>
+            <span id="header-stars" class="font-jua text-sm sm:text-base text-amber-900">0개</span>
+          </div>
+        </div>
+        <div class="bg-indigo-50 border border-indigo-200 px-3.5 py-1.5 rounded-2xl flex items-center gap-2">
+          <span class="text-indigo-500 text-lg">🔥</span>
+          <div>
+            <span class="text-[10px] text-indigo-700 block font-bold leading-none">연속 콤보</span>
+            <span id="header-combo" class="font-jua text-sm sm:text-base text-indigo-900">0 콤보</span>
+          </div>
+        </div>
+        <button onclick="openDashboardModal()" class="px-3.5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl shadow-md transition text-xs sm:text-sm font-bold flex items-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span class="hidden sm:inline">선생님</span> 학습 관리
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <button onclick="switchMathMode('chat_quest')" id="tab-chat" class="px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-gradient-to-r from-pink-500 to-indigo-600 text-white shadow-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-comments"></i> 💬 대화형 실생활 퀘스트
+        </button>
+        <button onclick="switchMathMode('symmetry_game')" id="tab-symmetry" class="px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-slate-100 text-slate-600 hover:text-indigo-600 flex items-center gap-1.5">
+          <i class="fa-solid fa-shapes"></i> 🧩 선대칭 모눈 퍼즐
+        </button>
+        <button onclick="switchMathMode('math_battle')" id="tab-battle" class="px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-slate-100 text-slate-600 hover:text-indigo-600 flex items-center gap-1.5">
+          <i class="fa-solid fa-calculator"></i> 👾 평행사변형 몬스터 배틀
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Alert -->
+  <div id="toast-banner" class="fixed top-5 right-5 z-50 transform -translate-y-36 transition-transform duration-300 bg-white border-l-4 border-indigo-500 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+    <div id="toast-icon" class="text-indigo-500 text-2xl"><i class="fa-solid fa-circle-info"></i></div>
+    <div>
+      <h4 id="toast-title" class="font-bold text-sm text-slate-800">알림</h4>
+      <p id="toast-desc" class="text-xs text-slate-500">안내 문구</p>
+    </div>
+  </div>
+
+  <main class="w-full max-w-5xl">
+
+    <!-- ==========================================
+         MODE 1: 대화형 실생활 롤플레잉 퀘스트
+         ========================================== -->
+    <div id="view-chat-quest" class="space-y-4">
+      <div class="bg-white/95 backdrop-blur-md rounded-3xl p-4 sm:p-5 shadow-soft border border-white/80 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-500">시나리오 선택:</span>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="selectChatScenario('space')" id="scen-btn-space" class="scen-btn px-3 py-1.5 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow-sm flex items-center gap-1.5">
+              <span>🚀</span> 1. 우주 여행사 미션
+            </button>
+            <button onclick="selectChatScenario('cook')" id="scen-btn-cook" class="scen-btn px-3 py-1.5 rounded-xl font-bold text-xs transition bg-slate-100 text-slate-600 hover:text-indigo-600 flex items-center gap-1.5">
+              <span>🍳</span> 2. 마스터 셰프 조수
+            </button>
+            <button onclick="selectChatScenario('trip')" id="scen-btn-trip" class="scen-btn px-3 py-1.5 rounded-xl font-bold text-xs transition bg-slate-100 text-slate-600 hover:text-indigo-600 flex items-center gap-1.5">
+              <span>🗺️</span> 3. 채윤이와 여행 플래너
+            </button>
+          </div>
+        </div>
+        <div class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-xl flex items-center gap-1">
+          <i class="fa-solid fa-compass"></i> <span id="chat-page-ref">태양계 행성과 물체의 무게</span>
+        </div>
+      </div>
+
+      <section class="bg-white/95 backdrop-blur-md rounded-3xl shadow-soft border border-white/80 overflow-hidden flex flex-col h-[650px]">
+        <div id="chat-header-bar" class="px-6 py-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex items-center justify-between border-b border-indigo-900">
+          <div class="flex items-center gap-3">
+            <div id="partner-avatar" class="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center text-2xl border border-white/20">
+              👨‍🚀
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 id="partner-name" class="font-jua text-lg text-white">우주비행사 루카</h3>
+                <span id="partner-tag" class="text-[10px] bg-indigo-500/40 text-indigo-200 border border-indigo-400/40 px-2 py-0.5 rounded-full font-bold">탐사 지휘관</span>
+              </div>
+              <p id="partner-sub" class="text-xs text-slate-300">행성별 중력과 우주복 무게를 함께 계산해 봐요!</p>
+            </div>
+          </div>
+          <button onclick="restartCurrentScenario()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl transition flex items-center gap-1 font-bold">
+            <i class="fa-solid fa-arrow-rotate-left"></i> 처음부터
+          </button>
+        </div>
+
+        <div id="chat-log" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 custom-scroll bg-slate-50/70"></div>
+
+        <div id="chat-action-area" class="p-4 bg-white border-t border-slate-100">
+          <div id="chat-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================
+         MODE 2: 선대칭 모눈 퍼즐
+         ========================================== -->
+    <div id="view-symmetry-game" class="hidden space-y-4">
+      <section class="bg-white/95 backdrop-blur-md rounded-3xl p-5 sm:p-7 shadow-soft border border-white/80">
+        <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="bg-rose-100 text-rose-800 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5">
+              <i class="fa-solid fa-shapes"></i> <span>3단원 합동과 대칭</span>
+            </span>
+            <span class="text-xs text-slate-500 font-bold">빨간선 기준 선대칭도형 만들기</span>
+          </div>
+          <button onclick="resetSymmetryGame()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1">
+            <i class="fa-solid fa-rotate-left"></i> 판 비우기
+          </button>
+        </div>
+
+        <div class="bg-gradient-to-r from-rose-50 to-amber-50 border-2 border-rose-200 rounded-2xl p-4 mb-5 flex items-start gap-3.5">
+          <div class="text-3xl text-rose-500 mt-1">🤖</div>
+          <div class="flex-1">
+            <h3 class="font-jua text-base sm:text-lg text-rose-950">컴퓨터와 함께 만드는 선대칭도형 배틀!</h3>
+            <p class="text-xs sm:text-sm text-rose-800 mt-1 leading-relaxed font-bold">
+              "대칭 모형을 만들어 보자. 나와 함께 만들어야 돼. 나는 아무 곳에나 둘 수도 있어, 너는 대칭이 될 수 있도록 놔야돼. 어려운 미션이야!"
+            </p>
+            <div class="mt-2.5 flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600">
+              <span>📍 빨간선(대칭축)에 변이나 꼭짓점이 닿아야 해요!</span>
+              <span class="text-indigo-600 font-extrabold">채움률: <strong id="symm-fill-pct" class="text-sm">0%</strong></span>
+              <span class="bg-rose-100 text-rose-800 px-2.5 py-0.5 rounded-full text-[11px]" id="symm-fail-counter">실패 횟수: 0회 (대칭 성공 확률: 70%)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-7 flex flex-col items-center justify-center bg-slate-50 p-4 sm:p-6 rounded-3xl border-2 border-dashed border-slate-300">
+            <div class="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1.5">
+              <span class="w-3 h-0.5 bg-rose-500 inline-block"></span> 중앙 빨간 선 = 대칭축
+            </div>
+            <div class="relative bg-white p-2 rounded-2xl shadow-md border-2 border-slate-300">
+              <svg id="symmetry-board-svg" viewBox="0 0 360 360" class="w-[300px] h-[300px] sm:w-[360px] sm:h-[360px] cursor-pointer select-none"></svg>
+            </div>
+            <div id="symm-status-message" class="text-xs text-indigo-900 font-bold mt-3 text-center bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200">
+              👈 오른쪽에서 모양 조각을 고르고, 놀이판의 빨간선 근처 칸을 클릭하세요!
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-jua text-sm text-slate-800">🎨 교과서 모양 조각 선택</span>
+                <span class="text-xs bg-amber-100 text-amber-900 font-bold px-2.5 py-0.5 rounded-full">만두의 차례!</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mb-3">조각을 클릭하여 선택한 뒤 놀이판에 배치해 보세요.</p>
+
+              <div class="space-y-2.5" id="symm-piece-list">
+                <button type="button" onclick="selectSymmPiece('small_tri')" id="symm-piece-small_tri" class="symm-piece-btn w-full p-2.5 rounded-2xl border-2 border-indigo-600 bg-indigo-50 transition flex items-center justify-between shadow-xs">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center border border-amber-300">
+                      <div class="w-0 h-0 border-l-[14px] border-l-transparent border-b-[18px] border-b-amber-500 border-r-[14px] border-r-transparent"></div>
+                    </div>
+                    <div class="text-left">
+                      <span class="text-xs font-bold text-slate-800 block">노란색 작은 삼각형</span>
+                      <span class="text-[10px] text-slate-400">1개 삼각칸 채움</span>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-check text-indigo-600"></i>
+                </button>
+
+                <button type="button" onclick="selectSymmPiece('rhombus')" id="symm-piece-rhombus" class="symm-piece-btn w-full p-2.5 rounded-2xl border-2 border-slate-200 hover:border-emerald-400 bg-white transition flex items-center justify-between shadow-xs">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-300">
+                      <div class="w-6 h-6 bg-emerald-500 rotate-45 rounded-xs"></div>
+                    </div>
+                    <div class="text-left">
+                      <span class="text-xs font-bold text-slate-800 block">초록색 마름모 (4칸 다이아몬드)</span>
+                      <span class="text-[10px] text-slate-400">4개 삼각칸 모음 (빨간선에 꼭짓점 접촉)</span>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-circle text-slate-200"></i>
+                </button>
+
+                <button type="button" onclick="selectSymmPiece('big_tri')" id="symm-piece-big_tri" class="symm-piece-btn w-full p-2.5 rounded-2xl border-2 border-slate-200 hover:border-blue-400 bg-white transition flex items-center justify-between shadow-xs">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-300">
+                      <div class="w-0 h-0 border-l-[18px] border-l-transparent border-b-[22px] border-b-blue-600 border-r-[18px] border-r-transparent"></div>
+                    </div>
+                    <div class="text-left">
+                      <span class="text-xs font-bold text-slate-800 block">파란색 큰 삼각형 (2칸 직각이등변)</span>
+                      <span class="text-[10px] text-slate-400">직각면이 붙은 2개 삼각칸</span>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-circle text-slate-200"></i>
+                </button>
+              </div>
+            </div>
+
+            <div id="symm-eval-box" class="mt-4 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-center text-xs font-bold text-slate-600">
+              현재 상태: 대칭을 만드는 중입니다...
+            </div>
+          </div>
+        </div>
+
+        <div id="symm-final-modal" class="mt-4 p-4 rounded-2xl bg-emerald-100 border-2 border-emerald-400 text-center hidden"></div>
+      </section>
+    </div>
+
+    <!-- ==========================================
+         MODE 3: 평행사변형 배틀
+         ========================================== -->
+    <div id="view-math-battle" class="hidden space-y-4">
+      <section class="bg-white/95 backdrop-blur-md rounded-3xl p-5 sm:p-8 shadow-soft border border-white/80">
+        <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="bg-indigo-100 text-indigo-800 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5">
+              <i class="fa-solid fa-scroll"></i> <span id="m1-progress">수학 배틀 1 / 2</span>
+            </span>
+            <span class="text-xs text-slate-500 font-bold" id="m1-type">평행사변형 넓이</span>
+          </div>
+          <div class="text-xs text-slate-500 font-medium flex items-center gap-2">
+            <span>⏱️</span>
+            <span id="m1-timer" class="font-mono text-indigo-600 font-bold">0초</span>
+          </div>
+        </div>
+
+        <div class="relative bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 text-white mb-6 overflow-hidden shadow-md">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="text-4xl animate-bounce">👾</span>
+              <div>
+                <span class="font-jua text-lg text-rose-300">오답 드래곤</span>
+                <p class="text-xs text-slate-300">정답을 맞혀 만두의 분수 레이저로 물리치세요!</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span id="monster-hp-text" class="font-jua text-2xl text-rose-400">100</span>
+              <span class="text-xs text-slate-400">/ 100 HP</span>
+            </div>
+          </div>
+          <div class="w-full bg-slate-800/80 rounded-full h-4 p-0.5 border border-slate-700">
+            <div id="monster-hp-bar" class="bg-gradient-to-r from-rose-500 to-amber-500 h-full rounded-full transition-all duration-300 shadow" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <div id="m1-diagram-container" class="mb-5 flex justify-center w-full"></div>
+
+        <div class="bg-slate-50 border-2 border-indigo-100 rounded-3xl p-5 sm:p-6 mb-5 min-h-[90px] flex items-center justify-center text-center">
+          <div id="m1-question-box" class="text-lg sm:text-xl font-bold text-slate-800 leading-loose"></div>
+        </div>
+
+        <div id="m1-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4"></div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+          <button onclick="showMathHint()" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 rounded-xl transition">
+            <i class="fa-regular fa-lightbulb text-amber-500"></i> 계산 힌트 보기
+          </button>
+          <div id="m1-feedback" class="text-sm font-bold min-h-[24px] flex items-center"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TEACHER DASHBOARD MODAL -->
+    <div id="dashboard-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5 hidden">
+      <div class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        <div class="p-5 bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-800 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-2xl">📊</div>
+            <div>
+              <h3 class="font-jua text-xl">안만두 사고력 수학 리포트</h3>
+              <p class="text-xs text-indigo-200">Google 스프레드시트 실시간 동기화</p>
+            </div>
+          </div>
+          <button onclick="closeDashboardModal()" class="text-white/70 hover:text-white text-2xl transition p-1">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="bg-indigo-50 border border-indigo-100 p-3.5 rounded-2xl">
+              <span class="text-xs text-indigo-600 font-bold block">총 푼 문항</span>
+              <p class="font-jua text-2xl text-indigo-900 mt-1" id="dash-total">0</p>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-100 p-3.5 rounded-2xl">
+              <span class="text-xs text-emerald-600 font-bold block">정답률</span>
+              <p class="font-jua text-2xl text-emerald-900 mt-1" id="dash-acc">0%</p>
+            </div>
+            <div class="bg-amber-50 border border-amber-100 p-3.5 rounded-2xl">
+              <span class="text-xs text-amber-600 font-bold block">최고 콤보</span>
+              <p class="font-jua text-2xl text-amber-900 mt-1" id="dash-combo">0</p>
+            </div>
+            <div class="bg-purple-50 border border-purple-100 p-3.5 rounded-2xl">
+              <span class="text-xs text-purple-600 font-bold block">퀘스트 달성</span>
+              <p class="font-jua text-2xl text-purple-900 mt-1" id="dash-quests">0</p>
+            </div>
+          </div>
+
+          <div class="bg-indigo-50/70 border border-indigo-200 p-4 rounded-2xl">
+            <label class="text-xs font-bold text-indigo-950 flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i> Google Apps Script 웹앱 URL
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="gas-url-field" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-xs border border-indigo-200 bg-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+              <button onclick="saveGasSetting()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition active:scale-95">저장</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-jua text-sm text-slate-800">풀이 기록 로그</h4>
+              <button onclick="clearStudyHistory()" class="text-xs text-rose-500 hover:underline font-bold">기록 초기화</button>
+            </div>
+            <div class="border border-slate-200 rounded-2xl overflow-hidden max-h-52 overflow-y-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 sticky top-0">
+                  <tr>
+                    <th class="p-2.5">시간</th>
+                    <th class="p-2.5">주제</th>
+                    <th class="p-2.5 text-center">결과</th>
+                    <th class="p-2.5">답안 / 정답</th>
+                    <th class="p-2.5 text-center">소요시간</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-table-body" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-xs text-slate-400">학생명: <strong>안만두</strong> | 사고력 수학 세트</span>
+          <button onclick="closeDashboardModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition">닫기</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* ================= AUDIO SYNTHESIZER ================= */
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let soundCtx = null;
+    function initAudio() {
+      if (!soundCtx) soundCtx = new AudioCtx();
+      if (soundCtx.state === 'suspended') soundCtx.resume();
+    }
+    function triggerSound(type) {
+      try {
+        initAudio();
+        const now = soundCtx.currentTime;
+        if (type === 'correct') {
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = soundCtx.createOscillator();
+            const gain = soundCtx.createGain();
+            osc.frequency.setValueAtTime(freq, now + i * 0.07);
+            gain.gain.setValueAtTime(0.2, now + i * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.25);
+            osc.connect(gain); gain.connect(soundCtx.destination);
+            osc.start(now + i * 0.07); osc.stop(now + i * 0.07 + 0.3);
+          });
+        } else if (type === 'wrong') {
+          const osc = soundCtx.createOscillator();
+          const gain = soundCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(240, now);
+          osc.frequency.linearRampToValueAtTime(130, now + 0.25);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.connect(gain); gain.connect(soundCtx.destination);
+          osc.start(now); osc.stop(now + 0.26);
+        } else if (type === 'chat') {
+          const osc = soundCtx.createOscillator();
+          const gain = soundCtx.createGain();
+          osc.frequency.setValueAtTime(650, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.06);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+          osc.connect(gain); gain.connect(soundCtx.destination);
+          osc.start(now); osc.stop(now + 0.07);
+        } else if (type === 'victory') {
+          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach(f => {
+            const osc = soundCtx.createOscillator();
+            const gain = soundCtx.createGain();
+            osc.frequency.setValueAtTime(f, now);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+            osc.connect(gain); gain.connect(soundCtx.destination);
+            osc.start(now); osc.stop(now + 0.9);
+          });
+        }
+      } catch (e) {}
+    }
+
+    /* ================= FRACTION RENDERER ================= */
+    function renderFrac(whole, num, denom, unit = "") {
+      const hasWhole = whole !== null && whole !== undefined && whole !== 0 && whole !== "0" && whole !== "";
+      return `
+        <span class="math-fraction">
+          ${hasWhole ? `<span class="whole-num">${whole}</span>` : ''}
+          <span class="frac-stack">
+            <span class="frac-num">${num}</span>
+            <span class="frac-line"></span>
+            <span class="frac-denom">${denom}</span>
+          </span>
+          ${unit ? `<span class="ml-1 text-slate-700 font-semibold">${unit}</span>` : ''}
+        </span>
+      `;
+    }
+
+    /* ================= GLOBAL STATE ================= */
+    let globalStars = parseInt(localStorage.getItem('mandoo_math_stars') || '0', 10);
+    let globalCombo = 0;
+    let maxCombo = parseInt(localStorage.getItem('mandoo_math_max_combo') || '0', 10);
+    let GAS_APP_URL = localStorage.getItem('mandoo_gas_url') || '';
+
+    function getLocalRecords() {
+      return JSON.parse(localStorage.getItem('mandoo_math_records') || '[]');
+    }
+
+    function addRecord(record) {
+      const records = getLocalRecords();
+      records.unshift({
+        id: Date.now(),
+        date: new Date().toLocaleString('ko-KR'),
+        ...record
+      });
+      localStorage.setItem('mandoo_math_records', JSON.stringify(records.slice(0, 200)));
+
+      if (GAS_APP_URL) {
+        fetch(GAS_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            student: "안만두",
+            subject: "사고력수학",
+            topic: record.topic,
+            isCorrect: record.isCorrect,
+            userAnswer: record.userAnswer,
+            correctAnswer: record.correctAnswer,
+            timeSpent: record.timeSpent || 0,
+            hintCount: record.hintCount || 0,
+            date: new Date().toLocaleString('ko-KR')
+          })
+        }).catch(() => {});
+      }
+      updateDashboardStats();
+    }
+
+    function updateHeaderStats() {
+      document.getElementById('header-stars').innerText = `${globalStars}개`;
+      document.getElementById('header-combo').innerText = `${globalCombo} 콤보`;
+    }
+
+    /* ================= 1. CHAT ROLEPLAY QUEST ================= */
+    let currentScenarioKey = 'space';
+    let currentStepIndex = 0;
+    let chatStepStartTime = Date.now();
+
+    const chatScenarios = {
+      space: {
+        title: "우주 여행사 탐사 미션",
+        pageRef: "태양계 행성과 물체의 무게",
+        avatar: "👨‍🚀",
+        partnerName: "우주비행사 루카",
+        partnerTag: "탐사 지휘관",
+        partnerSub: "행성별 중력과 우주복 무게를 함께 계산해 봐요!",
+        steps: [
+          {
+            type: "dialogue",
+            speaker: "partner",
+            text: "안녕, 만두 대원! 각 행성은 중력이 달라서 지구에서 80 kg인 우주복의 무게도 행성마다 완전히 달라진단다!",
+            nextDelay: 1000
+          },
+          {
+            type: "question",
+            topic: "우주복 무게(화성)",
+            questionHtml: `화성에서 잰 물체의 무게는 지구의 ${renderFrac(null, 19, 50)} 배야.<br>지구에서 80 kg인 우주복은 <strong>화성에서 몇 kg</strong>이 될까?`,
+            infoCard: `💡 계산 팁: 80 × ${renderFrac(null, 19, 50)} 을 약분해서 계산해 보세요!`,
+            choices: [
+              { html: () => `${renderFrac(30, 2, 5, 'kg')}`, text: "30 2/5 kg", isCorrect: true },
+              { html: () => `${renderFrac(32, 1, 5, 'kg')}`, text: "32 1/5 kg", isCorrect: false },
+              { html: () => `${renderFrac(28, 4, 5, 'kg')}`, text: "28 4/5 kg", isCorrect: false },
+              { html: () => `${renderFrac(35, 1, 2, 'kg')}`, text: "35 1/2 kg", isCorrect: false }
+            ],
+            feedbackSuccess: `정답이야! 80 × 19/50 = 152/5 = ${renderFrac(30, 2, 5, 'kg')}! 화성에서는 우주복이 훨씬 가벼워져!`,
+            feedbackFail: `아쉬워! 80과 50을 10으로 약분하면 8 × 19/5 = 152/5 = ${renderFrac(30, 2, 5, 'kg')} 가 된단다.`
+          },
+          {
+            type: "question",
+            topic: "우주복 무게(금성)",
+            questionHtml: `이번엔 금성으로 가보자! 금성에서 잰 무게는 지구의 ${renderFrac(null, 91, 100)} 배란다.<br>지구에서 80 kg인 우주복은 <strong>금성에서 몇 kg</strong>일까?`,
+            infoCard: `💡 계산 팁: 80 × ${renderFrac(null, 91, 100)} 을 20으로 먼저 약분해 봐!`,
+            choices: [
+              { html: () => `${renderFrac(70, 1, 5, 'kg')}`, text: "70 1/5 kg", isCorrect: false },
+              { html: () => `${renderFrac(72, 4, 5, 'kg')}`, text: "72 4/5 kg", isCorrect: true },
+              { html: () => `${renderFrac(74, 2, 5, 'kg')}`, text: "74 2/5 kg", isCorrect: false },
+              { html: () => `${renderFrac(76, 3, 10, 'kg')}`, text: "76 3/10 kg", isCorrect: false }
+            ],
+            feedbackSuccess: `완벽해! 80과 100을 20으로 약분하면 4 × 91 / 5 = 364/5 = ${renderFrac(72, 4, 5, 'kg')} 야!`,
+            feedbackFail: `다시 계산해봐! 80 × 91/100 = 364/5 = ${renderFrac(72, 4, 5, 'kg')} 란다.`
+          },
+          {
+            type: "question",
+            topic: "태양광 전지판 넓이",
+            questionHtml: `우주선에 전기를 공급할 직사각형 <strong>태양광 전지판</strong>을 설치하려고 해.<br>가로가 ${renderFrac(1, 1, 3, 'm')}이고 세로가 ${renderFrac(2, 3, 8, 'm')}일 때, <strong>전지판의 넓이</strong>는 몇 m²일까?`,
+            infoCard: `💡 직사각형 넓이: 가로 × 세로 (${renderFrac(1, 1, 3)} × ${renderFrac(2, 3, 8)})`,
+            choices: [
+              { html: () => `${renderFrac(3, 1, 6, 'm²')}`, text: "3 1/6 m²", isCorrect: true },
+              { html: () => `${renderFrac(2, 5, 8, 'm²')}`, text: "2 5/8 m²", isCorrect: false },
+              { html: () => `${renderFrac(3, 5, 12, 'm²')}`, text: "3 5/12 m²", isCorrect: false },
+              { html: () => `${renderFrac(4, 1, 3, 'm²')}`, text: "4 1/3 m²", isCorrect: false }
+            ],
+            feedbackSuccess: `정말 최고야! ${renderFrac(null, 4, 3)} × ${renderFrac(null, 19, 8)} = ${renderFrac(3, 1, 6, 'm²')}! 전지판 완성! 🚀`,
+            feedbackFail: `4/3 × 19/8에서 4와 8을 약분하면 19/6 = ${renderFrac(3, 1, 6, 'm²')} 가 된단다!`
+          }
+        ]
+      },
+      cook: {
+        title: "마스터 셰프 조수 미션",
+        pageRef: "달콤한 과일청과 건강한 텃밭 요리",
+        avatar: "👩‍🍳",
+        partnerName: "마스터 셰프 한",
+        partnerTag: "수석 조리장",
+        partnerSub: "조리실에 남은 설탕 9 kg으로 맛있는 요리를 만들어 보자!",
+        steps: [
+          {
+            type: "dialogue",
+            speaker: "partner",
+            text: "만두 조수! 조리실에 정확히 9 kg의 설탕이 남아있단다. 딸기잼과 레몬청을 차례대로 만들어 볼까?",
+            nextDelay: 1000
+          },
+          {
+            type: "question",
+            topic: "딸기잼 설탕 양",
+            questionHtml: `남아있는 설탕 9 kg 중 ${renderFrac(null, 4, 9)} 로 딸기잼을 먼저 만들었어.<br><strong>딸기잼을 만드는 데 쓴 설탕</strong>은 몇 kg일까?`,
+            conceptTip: `💡 개념 팁: '${renderFrac(null, 4, 9)}'는 9 kg을 똑같이 9묶음으로 나눈 것 중 4묶음이라는 뜻이에요!`,
+            extraHint: `식: 9 × ${renderFrac(null, 4, '( &nbsp; )')}<br>👉 빈 칸에 들어갈 숫자를 생각하고 식을 만들어 계산하면 돼요!`,
+            choices: [
+              { text: "3 kg", isCorrect: false },
+              { text: "4 kg", isCorrect: true },
+              { text: "5 kg", isCorrect: false },
+              { html: () => `${renderFrac(4, 1, 2, 'kg')}`, text: "4 1/2 kg", isCorrect: false }
+            ],
+            feedbackSuccess: `훌륭해! 9 kg을 9개로 나누면 1 kg이고, 그중 4개니까 9 × 4/9 = 4 kg!`,
+            feedbackFail: `9 kg을 똑같이 9묶음으로 나눈 것 중 4묶음이므로 9 × 4/9 = 4 kg이 된단다!`
+          },
+          {
+            type: "question",
+            topic: "레몬청 설탕 양",
+            questionHtml: `9 kg 중 4 kg을 썼으니 설탕 5 kg이 남았지?<br><strong>'남은 설탕(5 kg)의 ${renderFrac(null, 5, 6)}'</strong>로 레몬청을 만들었단다. <strong>레몬청에 사용한 설탕의 양</strong>은 몇 kg일까?`,
+            conceptTip: `💡 개념 팁: 남은 5 kg을 똑같이 6묶음으로 나눈 것 중 5묶음이에요!`,
+            extraHint: `식: 5 × ${renderFrac(null, 5, '( &nbsp; )')}<br>👉 빈 칸에 들어갈 숫자를 생각하고 식을 만들어 계산하면 돼요!`,
+            choices: [
+              { html: () => `${renderFrac(3, 5, 6, 'kg')}`, text: "3 5/6 kg", isCorrect: false },
+              { html: () => `${renderFrac(4, 1, 6, 'kg')}`, text: "4 1/6 kg", isCorrect: true },
+              { html: () => `${renderFrac(4, 2, 3, 'kg')}`, text: "4 2/3 kg", isCorrect: false },
+              { html: () => `${renderFrac(4, 5, 6, 'kg')}`, text: "4 5/6 kg", isCorrect: false }
+            ],
+            feedbackSuccess: `브라보! 5 × 5/6 = 25/6 = ${renderFrac(4, 1, 6, 'kg')}! 황금 비율 레몬청 완성! 🍋`,
+            feedbackFail: `5 kg의 5/6이므로 5 × 5/6 = 25/6 = ${renderFrac(4, 1, 6, 'kg')} 가 정답이란다.`
+          }
+        ]
+      },
+      trip: {
+        title: "채윤이와 여행 플래너 미션",
+        pageRef: "직업 체험관 탐방 계획",
+        avatar: "👧",
+        partnerName: "단짝 채윤이",
+        partnerTag: "여행 상품 개발자",
+        partnerSub: "모둠 직업체험관 계획표를 한 단계씩 같이 세워보자!",
+        steps: [
+          {
+            type: "question",
+            topic: "4시간을 분으로 바꾸기",
+            questionHtml: `
+              <div class="space-y-2 text-left">
+                <p class="font-jua text-base sm:text-lg text-slate-800">
+                  👧 채윤이: "체험관을 둘러볼 수 있는 순수 관람 시간이 <strong>총 4시간</strong>이래.<br>
+                  <strong>1시간은 60분</strong>이잖아? 그럼 <strong>4시간은 모두 몇 분</strong>일까?"
+                </p>
+                <div class="p-2 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900 font-semibold">
+                  💡 힌트: 60분이 4번 모이면 얼마일까? (60 × 4)
+                </div>
+              </div>
+            `,
+            choices: [
+              { text: "180분", isCorrect: false },
+              { text: "200분", isCorrect: false },
+              { text: "240분", isCorrect: true },
+              { text: "280분", isCorrect: false }
+            ],
+            feedbackSuccess: `딩동댕! 60 × 4 = 240분 맞아! 총 240분이구나! 🎉`,
+            feedbackFail: `60분을 4번 더하면 60 + 60 + 60 + 60 = 240분이 된단다!`
+          },
+          {
+            type: "interactive_bar_split",
+            topic: "240분을 3등분하기",
+            questionHtml: `
+              <div class="space-y-2 text-left">
+                <p class="font-jua text-base sm:text-lg text-slate-800 leading-snug">
+                  👧 채윤이: "이중 <strong>${renderFrac(null, 1, 3)}만 ㉮구역</strong>을 관람할 수 있다면, <strong>240분을 똑같이 세 묶음</strong>으로 먼저 나눠봐야겠네!<br>
+                  아래 240분 막대에서 <strong>어디 어디를 나눠야 할까?</strong> 화살표를 꽂아줘!"
+                </p>
+                <div class="text-xs text-indigo-700 bg-indigo-50 p-2 rounded-xl border border-indigo-200 font-bold">
+                  👇 똑같이 3등분이 되는 2곳을 선택해 보세요! (240 ÷ 3)
+                </div>
+              </div>
+            `
+          },
+          {
+            type: "question",
+            topic: "㉮구역 관람 시간 (시간과 분)",
+            questionHtml: `
+              <div class="space-y-3 text-left">
+                <div class="p-3 bg-amber-50 border-2 border-amber-300 rounded-2xl shadow-xs">
+                  <p class="font-jua text-base sm:text-lg text-amber-950 leading-snug">
+                    👧 채윤이: "좋았어! 자, 그럼 처음 질문으로 다시 돌아오자!<br>
+                    순수 관람 시간 <strong>총 4시간 중 ${renderFrac(null, 1, 3)}인 '80분'</strong>은 <strong>몇 시간 몇 분</strong>일까?"
+                  </p>
+                </div>
+                <div class="p-3 bg-white border-2 border-indigo-200 rounded-2xl flex items-center justify-between gap-2 text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl">⏱️</span>
+                    <div>
+                      <span class="font-bold text-indigo-950 block">80분 = 60분(1시간) + 20분</span>
+                      <span class="text-[11px] text-slate-500">60분이 1시간이니까... 남은 20분은?</span>
+                    </div>
+                  </div>
+                  <span class="bg-indigo-100 text-indigo-800 font-black px-2.5 py-1 rounded-xl text-xs">80분 분해</span>
+                </div>
+              </div>
+            `,
+            choices: [
+              { html: () => `${renderFrac(1, 1, 3, '시간')} (1시간 20분)`, text: "1 1/3 시간 (1시간 20분)", isCorrect: true },
+              { html: () => `${renderFrac(1, 2, 3, '시간')} (1시간 40분)`, text: "1 2/3 시간 (1시간 40분)", isCorrect: false },
+              { html: () => `${renderFrac(1, 1, 2, '시간')} (1시간 30분)`, text: "1 1/2 시간 (1시간 30분)", isCorrect: false },
+              { html: () => `${renderFrac(2, 1, 3, '시간')} (2시간 20분)`, text: "2 1/3 시간 (2시간 20분)", isCorrect: false }
+            ],
+            feedbackSuccess: `완벽해! 80분은 ${renderFrac(1, 1, 3, '시간')}(1시간 20분)이야! 👏`,
+            feedbackFail: `80분에서 60분을 빼면 20분이 남아서 1시간 20분이 된단다!`
+          },
+          {
+            type: "question",
+            topic: "㉮구역 관람 종료 시각",
+            questionHtml: `
+              <div class="space-y-3 text-left">
+                <p class="font-jua text-base sm:text-lg text-slate-800">
+                  👧 채윤이: "10시 10분에 도착해서 <strong>1시간 20분 동안 ㉮구역을 관람</strong>한다면, <strong>몇 시 몇 분까지 관람하고 모이면 될까?</strong>"
+                </p>
+                <div class="bg-indigo-50 rounded-2xl p-3 border border-indigo-200 text-xs font-bold text-indigo-900">
+                  💡 계산: 10시 10분 + 1시간 20분 = 몇 시 몇 분?
+                </div>
+              </div>
+            `,
+            choices: [
+              { text: "오전 11시 10분", isCorrect: false },
+              { text: "오전 11시 20분", isCorrect: false },
+              { text: "오전 11시 30분", isCorrect: true },
+              { text: "오전 11시 40분", isCorrect: false }
+            ],
+            feedbackSuccess: `정답이야! 10시 10분 + 1시간 20분 = 오전 11시 30분! 늦지 않고 모일 수 있겠어! 🍱✨`,
+            feedbackFail: `10시 10분에 1시간을 더하면 11시 10분, 20분을 더하면 오전 11시 30분이 된단다!`
+          }
+        ]
+      }
+    };
+
+    function selectChatScenario(scenKey) {
+      currentScenarioKey = scenKey;
+      currentStepIndex = 0;
+      ['space', 'cook', 'trip'].forEach(k => {
+        const btn = document.getElementById(`scen-btn-${k}`);
+        if (btn) btn.className = (k === scenKey) ? "scen-btn px-3 py-1.5 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow-sm flex items-center gap-1.5" : "scen-btn px-3 py-1.5 rounded-xl font-bold text-xs transition bg-slate-100 text-slate-600 hover:text-indigo-600 flex items-center gap-1.5";
+      });
+      const scen = chatScenarios[scenKey];
+      document.getElementById('chat-page-ref').innerText = scen.pageRef;
+      document.getElementById('partner-avatar').innerText = scen.avatar;
+      document.getElementById('partner-name').innerText = scen.partnerName;
+      document.getElementById('partner-tag').innerText = scen.partnerTag;
+      document.getElementById('partner-sub').innerText = scen.partnerSub;
+      document.getElementById('chat-log').innerHTML = "";
+      renderCurrentChatStep();
+    }
+
+    function restartCurrentScenario() { selectChatScenario(currentScenarioKey); }
+
+    function renderCurrentChatStep() {
+      const scen = chatScenarios[currentScenarioKey];
+      const optContainer = document.getElementById('chat-options-container');
+      optContainer.innerHTML = "";
+
+      if (currentStepIndex >= scen.steps.length) {
+        triggerSound('victory');
+        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+        appendPartnerBubble(`🎉 축하해! <strong>[${scen.title}]</strong> 미션을 모두 완수했단다!`, scen.avatar);
+        optContainer.innerHTML = `
+          <button onclick="selectChatScenario('${currentScenarioKey === 'space' ? 'cook' : currentScenarioKey === 'cook' ? 'trip' : 'space'}')" class="col-span-full p-3.5 bg-gradient-to-r from-emerald-500 to-indigo-600 text-white font-jua text-base rounded-2xl shadow-md transition active:scale-95">
+            🚀 다음 사고력 퀘스트로 이어하기!
+          </button>
+        `;
+        return;
+      }
+
+      const step = scen.steps[currentStepIndex];
+      chatStepStartTime = Date.now();
+
+      if (step.type === 'interactive_bar_split') {
+        const barHtml = `
+          <div class="space-y-3">
+            ${step.questionHtml}
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl border-2 border-indigo-200 shadow-sm">
+              <div class="flex items-center justify-between text-xs font-bold text-indigo-950 mb-2">
+                <span>📏 총 240분 막대 (4시간)</span>
+                <span class="text-rose-600 font-extrabold" id="cut-status-text">화살표 2곳을 선택해 주세요! (0/2)</span>
+              </div>
+              <div class="relative w-full bg-slate-100 rounded-xl p-2 border border-slate-300 select-none">
+                <div class="h-10 w-full bg-gradient-to-r from-indigo-200 via-sky-200 to-emerald-200 rounded-lg flex items-center justify-between px-3 text-[11px] font-black text-slate-700 shadow-inner">
+                  <span>0분</span><span>40분</span><span>80분</span><span>120분</span><span>160분</span><span>200분</span><span>240분</span>
+                </div>
+                <div class="grid grid-cols-5 gap-1.5 mt-2.5 pt-1 text-center" id="cut-buttons-area">
+                  <button type="button" data-min="40" onclick="toggleCutArrow(40, this)" class="cut-slot-btn py-1.5 px-1 bg-white hover:bg-indigo-50 border-2 border-slate-300 rounded-xl text-[11px] font-bold text-slate-700 transition active:scale-95 flex flex-col items-center">
+                    <span class="arrow-icon text-slate-300 text-sm">⬇️</span><span>40분</span>
+                  </button>
+                  <button type="button" data-min="80" onclick="toggleCutArrow(80, this)" class="cut-slot-btn py-1.5 px-1 bg-white hover:bg-indigo-50 border-2 border-slate-300 rounded-xl text-[11px] font-bold text-slate-700 transition active:scale-95 flex flex-col items-center">
+                    <span class="arrow-icon text-slate-300 text-sm">⬇️</span><span>80분</span>
+                  </button>
+                  <button type="button" data-min="120" onclick="toggleCutArrow(120, this)" class="cut-slot-btn py-1.5 px-1 bg-white hover:bg-indigo-50 border-2 border-slate-300 rounded-xl text-[11px] font-bold text-slate-700 transition active:scale-95 flex flex-col items-center">
+                    <span class="arrow-icon text-slate-300 text-sm">⬇️</span><span>120분</span>
+                  </button>
+                  <button type="button" data-min="160" onclick="toggleCutArrow(160, this)" class="cut-slot-btn py-1.5 px-1 bg-white hover:bg-indigo-50 border-2 border-slate-300 rounded-xl text-[11px] font-bold text-slate-700 transition active:scale-95 flex flex-col items-center">
+                    <span class="arrow-icon text-slate-300 text-sm">⬇️</span><span>160분</span>
+                  </button>
+                  <button type="button" data-min="200" onclick="toggleCutArrow(200, this)" class="cut-slot-btn py-1.5 px-1 bg-white hover:bg-indigo-50 border-2 border-slate-300 rounded-xl text-[11px] font-bold text-slate-700 transition active:scale-95 flex flex-col items-center">
+                    <span class="arrow-icon text-slate-300 text-sm">⬇️</span><span>200분</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        appendPartnerBubble(barHtml, scen.avatar);
+        optContainer.innerHTML = `
+          <button id="confirm-split-btn" onclick="checkBarSplitAnswer()" disabled class="col-span-full p-3.5 bg-slate-300 text-slate-500 font-jua text-sm sm:text-base rounded-2xl transition cursor-not-allowed flex items-center justify-center gap-2">
+            <span>화살표 2곳을 선택하면 확인 버튼이 켜져요! (0/2)</span>
+          </button>
+        `;
+        window.currentSelectedCuts = [];
+
+      } else if (step.type === 'dialogue') {
+        appendPartnerBubble(step.text, scen.avatar);
+        setTimeout(() => {
+          currentStepIndex++;
+          renderCurrentChatStep();
+        }, step.nextDelay || 1200);
+
+      } else if (step.type === 'question') {
+        let msgHtml = `<div>${step.questionHtml}</div>`;
+        if (step.conceptTip) {
+          msgHtml += `
+            <div class="mt-2.5 p-2.5 bg-indigo-50/80 border border-indigo-200 rounded-xl text-xs text-indigo-900 font-semibold leading-relaxed">
+              ${step.conceptTip}
+              ${step.extraHint ? `
+                <div class="mt-2 pt-2 border-t border-indigo-100">
+                  <button type="button" onclick="toggleExtraHint(this)" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 px-2 py-1 rounded-lg shadow-2xs hover:bg-indigo-50 transition flex items-center gap-1">
+                    <span>💡 힌트 추가?</span>
+                  </button>
+                  <div class="extra-hint-box hidden mt-2 p-2 bg-white rounded-lg border border-indigo-200 text-xs text-indigo-950 font-bold">
+                    ${step.extraHint}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        } else if (step.infoCard) {
+          msgHtml += `<div class="mt-2.5 p-2 bg-indigo-50/80 border border-indigo-200 rounded-xl text-xs text-indigo-900 font-semibold">${step.infoCard}</div>`;
+        }
+        appendPartnerBubble(msgHtml, scen.avatar);
+
+        step.choices.forEach(c => {
+          const btn = document.createElement('button');
+          btn.className = "p-3 bg-white hover:bg-indigo-50 border-2 border-slate-200 hover:border-indigo-400 text-slate-800 font-bold rounded-2xl transition duration-150 text-left px-4 flex items-center justify-between shadow-xs active:scale-95 text-xs sm:text-sm";
+          const label = c.html ? c.html() : c.text;
+          btn.innerHTML = `<span class="flex items-center">${label}</span> <i class="fa-solid fa-paper-plane text-slate-300"></i>`;
+          btn.onclick = () => handleChatUserChoice(c, step, scen);
+          optContainer.appendChild(btn);
+        });
+      }
+    }
+
+    function toggleCutArrow(val, btn) {
+      triggerSound('chat');
+      if (!window.currentSelectedCuts) window.currentSelectedCuts = [];
+      const idx = window.currentSelectedCuts.indexOf(val);
+      if (idx > -1) {
+        window.currentSelectedCuts.splice(idx, 1);
+        btn.classList.remove('bg-rose-50', 'border-rose-500', 'text-rose-700');
+        btn.classList.add('bg-white', 'border-slate-300', 'text-slate-700');
+        btn.querySelector('.arrow-icon').classList.remove('text-rose-600', 'scale-125');
+        btn.querySelector('.arrow-icon').classList.add('text-slate-300');
+      } else {
+        if (window.currentSelectedCuts.length >= 2) {
+          showToast('안내', '화살표는 2곳만 꽂을 수 있어요!', 'info');
+          return;
+        }
+        window.currentSelectedCuts.push(val);
+        btn.classList.remove('bg-white', 'border-slate-300', 'text-slate-700');
+        btn.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-700');
+        btn.querySelector('.arrow-icon').classList.remove('text-slate-300');
+        btn.querySelector('.arrow-icon').classList.add('text-rose-600', 'scale-125');
+      }
+
+      const count = window.currentSelectedCuts.length;
+      const statusEl = document.getElementById('cut-status-text');
+      const confirmBtn = document.getElementById('confirm-split-btn');
+      if (statusEl) statusEl.innerText = `화살표 2곳을 선택해 주세요! (${count}/2)`;
+      if (confirmBtn) {
+        if (count === 2) {
+          confirmBtn.disabled = false;
+          confirmBtn.className = "col-span-full p-3.5 bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white font-jua text-sm sm:text-base rounded-2xl shadow-md transition active:scale-95 flex items-center justify-center gap-2 animate-bounce cursor-pointer";
+          confirmBtn.innerHTML = `<span>✂️ 선택한 지점으로 3등분 자르기 확인!</span> <i class="fa-solid fa-check"></i>`;
+        } else {
+          confirmBtn.disabled = true;
+          confirmBtn.className = "col-span-full p-3.5 bg-slate-300 text-slate-500 font-jua text-sm sm:text-base rounded-2xl transition cursor-not-allowed flex items-center justify-center gap-2";
+          confirmBtn.innerHTML = `<span>화살표 2곳을 선택하면 확인 버튼이 켜져요! (${count}/2)</span>`;
+        }
+      }
+    }
+
+    function checkBarSplitAnswer() {
+      const cuts = (window.currentSelectedCuts || []).sort((a, b) => a - b);
+      const isCorrect = (cuts.length === 2 && cuts[0] === 80 && cuts[1] === 160);
+      const timeSpent = Math.round((Date.now() - chatStepStartTime) / 1000);
+      const scen = chatScenarios[currentScenarioKey];
+
+      addRecord({
+        topic: `${scen.title} - 240분 3등분`,
+        isCorrect: isCorrect,
+        userAnswer: cuts.join('분, ') + '분',
+        correctAnswer: "80분, 160분",
+        timeSpent: timeSpent,
+        hintCount: 0
+      });
+
+      appendUserBubble(`80분과 160분 지점에 화살표를 꽂아서 나눌래!`);
+      const optContainer = document.getElementById('chat-options-container');
+      optContainer.innerHTML = `<div class="col-span-full text-center text-xs text-slate-400 font-bold py-2">채윤이가 확인 중...</div>`;
+
+      setTimeout(() => {
+        if (isCorrect) {
+          triggerSound('correct');
+          confetti({ particleCount: 45, spread: 60, origin: { y: 0.7 } });
+          globalStars += 3;
+          globalCombo++;
+          updateHeaderStats();
+          appendPartnerBubble(`정확해! 240분을 3으로 나누면 <strong>240 ÷ 3 = 80분</strong>!<br>따라서 <strong>80분 지점</strong>과 <strong>160분 지점</strong>을 나누면 완벽한 3묶음이 돼! 🎯`, scen.avatar, 'success');
+          setTimeout(() => {
+            currentStepIndex++;
+            renderCurrentChatStep();
+          }, 1500);
+        } else {
+          triggerSound('wrong');
+          globalCombo = 0;
+          updateHeaderStats();
+          appendPartnerBubble(`다시 생각해볼까? 240분을 똑같이 3묶음으로 나누면 한 묶음은 몇 분일까? (240 ÷ 3 = 80분)`, scen.avatar, 'warn');
+          setTimeout(() => {
+            window.currentSelectedCuts = [];
+            document.querySelectorAll('.cut-slot-btn').forEach(b => {
+              b.className = "cut-slot-btn py-1.5 px-1 bg-white hover:bg-indigo-50 border-2 border-slate-300 rounded-xl text-[11px] font-bold text-slate-700 transition active:scale-95 flex flex-col items-center";
+              b.querySelector('.arrow-icon').className = "arrow-icon text-slate-300 text-sm";
+            });
+            document.getElementById('cut-status-text').innerText = `화살표 2곳을 선택해 주세요! (0/2)`;
+            const confirmBtn = document.getElementById('confirm-split-btn');
+            confirmBtn.disabled = true;
+            confirmBtn.className = "col-span-full p-3.5 bg-slate-300 text-slate-500 font-jua text-sm sm:text-base rounded-2xl transition cursor-not-allowed flex items-center justify-center gap-2";
+            confirmBtn.innerHTML = `<span>화살표 2곳을 선택하면 확인 버튼이 켜져요! (0/2)</span>`;
+          }, 1200);
+        }
+      }, 500);
+    }
+
+    function toggleExtraHint(btn) {
+      const hintBox = btn.nextElementSibling;
+      if (hintBox) {
+        hintBox.classList.toggle('hidden');
+        if (!hintBox.classList.contains('hidden')) {
+          triggerSound('chat');
+          btn.classList.add('bg-indigo-50', 'text-indigo-700');
+        } else {
+          btn.classList.remove('bg-indigo-50', 'text-indigo-700');
+        }
+      }
+    }
+
+    function handleChatUserChoice(choice, step, scen) {
+      triggerSound('chat');
+      const timeSpent = Math.round((Date.now() - chatStepStartTime) / 1000);
+      const isCorrect = choice.isCorrect;
+      document.getElementById('chat-options-container').innerHTML = `<div class="col-span-full text-center text-xs text-slate-400 font-bold py-2">대화 전송 중...</div>`;
+      appendUserBubble(choice.html ? choice.html() : choice.text);
+
+      addRecord({
+        topic: `${scen.title} - ${step.topic}`,
+        isCorrect: isCorrect,
+        userAnswer: choice.text || "분수 선택",
+        correctAnswer: step.choices.find(c => c.isCorrect)?.text || "",
+        timeSpent: timeSpent,
+        hintCount: 0
+      });
+
+      setTimeout(() => {
+        if (isCorrect) {
+          triggerSound('correct');
+          confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
+          globalStars += 3;
+          globalCombo++;
+          if (globalCombo > maxCombo) {
+            maxCombo = globalCombo;
+            localStorage.setItem('mandoo_math_max_combo', maxCombo);
+          }
+          localStorage.setItem('mandoo_math_stars', globalStars);
+          updateHeaderStats();
+          appendPartnerBubble(step.feedbackSuccess, scen.avatar, 'success');
+        } else {
+          triggerSound('wrong');
+          globalCombo = 0;
+          updateHeaderStats();
+          appendPartnerBubble(step.feedbackFail, scen.avatar, 'warn');
+        }
+        setTimeout(() => {
+          currentStepIndex++;
+          renderCurrentChatStep();
+        }, 1600);
+      }, 600);
+    }
+
+    function appendPartnerBubble(htmlContent, avatar, type = 'normal') {
+      const log = document.getElementById('chat-log');
+      const div = document.createElement('div');
+      div.className = "flex items-start gap-2.5 chat-bubble-enter max-w-[88%]";
+      let bgCls = "bg-white text-slate-800 border-slate-200";
+      if (type === 'success') bgCls = "bg-emerald-50 text-emerald-950 border-emerald-300";
+      if (type === 'warn') bgCls = "bg-rose-50 text-rose-950 border-rose-300";
+      div.innerHTML = `
+        <div class="w-9 h-9 rounded-2xl bg-indigo-100 flex items-center justify-center text-xl shrink-0 shadow-xs border border-indigo-200">${avatar}</div>
+        <div class="p-3.5 sm:p-4 rounded-3xl rounded-tl-sm border shadow-xs text-xs sm:text-sm leading-relaxed ${bgCls}">${htmlContent}</div>
+      `;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function appendUserBubble(htmlContent) {
+      const log = document.getElementById('chat-log');
+      const div = document.createElement('div');
+      div.className = "flex items-start justify-end gap-2.5 chat-bubble-enter w-full";
+      div.innerHTML = `
+        <div class="p-3.5 sm:p-4 rounded-3xl rounded-tr-sm bg-indigo-600 text-white shadow-xs text-xs sm:text-sm leading-relaxed max-w-[80%]">${htmlContent}</div>
+        <div class="w-9 h-9 rounded-2xl bg-amber-300 flex items-center justify-center text-xl shrink-0 shadow-xs">🥟</div>
+      `;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    /* ================= 2. TEXTBOOK SYMMETRY GAME ================= */
+    let selectedSymmPieceType = 'small_tri';
+    let symmetryGridState = {};
+    let isSymmetryGameOver = false;
+    let lastUserPlacedKeys = [];
+    let symmetryFailuresCount = 0;
+
+    function initSymmetryGame() {
+      symmetryGridState = {};
+      isSymmetryGameOver = false;
+      lastUserPlacedKeys = [];
+      document.getElementById('symm-fill-pct').innerText = '0%';
+      document.getElementById('symm-eval-box').className = "mt-4 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-center text-xs font-bold text-slate-600";
+      document.getElementById('symm-eval-box').innerText = "현재 상태: 대칭을 만드는 중입니다...";
+      document.getElementById('symm-final-modal').classList.add('hidden');
+      document.getElementById('symm-status-message').innerText = "👈 모양 조각을 고르고, 빨간선(대칭축) 근처 칸을 클릭하세요!";
+      updateSymmetryCounters();
+      renderSymmetrySvgBoard();
+    }
+
+    function updateSymmetryCounters() {
+      const counterEl = document.getElementById('symm-fail-counter');
+      if (counterEl) {
+        counterEl.innerText = `실패 횟수: ${symmetryFailuresCount}회 (대칭 성공 확률: ${Math.min(95, 70 + symmetryFailuresCount * 10)}%)`;
+      }
+    }
+
+    function resetSymmetryGame() {
+      triggerSound('chat');
+      initSymmetryGame();
+    }
+
+    function selectSymmPiece(pieceType) {
+      triggerSound('chat');
+      selectedSymmPieceType = pieceType;
+      ['small_tri', 'rhombus', 'big_tri'].forEach(pt => {
+        const btn = document.getElementById(`symm-piece-${pt}`);
+        if (btn) {
+          if (pt === pieceType) {
+            btn.className = "symm-piece-btn w-full p-2.5 rounded-2xl border-2 border-indigo-600 bg-indigo-50 transition flex items-center justify-between shadow-xs";
+            btn.querySelector('i').className = "fa-solid fa-check text-indigo-600";
+          } else {
+            btn.className = "symm-piece-btn w-full p-2.5 rounded-2xl border-2 border-slate-200 hover:border-slate-300 bg-white transition flex items-center justify-between shadow-xs";
+            btn.querySelector('i').className = "fa-solid fa-circle text-slate-200";
+          }
+        }
+      });
+    }
+
+    function renderSymmetrySvgBoard() {
+      const svg = document.getElementById('symmetry-board-svg');
+      if (!svg) return;
+      svg.innerHTML = "";
+
+      const cellSize = 80, offsetX = 20, offsetY = 20;
+      const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      bg.setAttribute("x", offsetX); bg.setAttribute("y", offsetY);
+      bg.setAttribute("width", 320); bg.setAttribute("height", 320);
+      bg.setAttribute("fill", "#f8fafc"); bg.setAttribute("stroke", "#94a3b8"); bg.setAttribute("stroke-width", "2");
+      svg.appendChild(bg);
+
+      const renderedKeys = new Set();
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          const x0 = offsetX + c * cellSize, y0 = offsetY + r * cellSize;
+          const x1 = x0 + cellSize, y1 = y0 + cellSize;
+          const cx = x0 + cellSize / 2, cy = y0 + cellSize / 2;
+          const cellKeyBase = `${r}_${c}`;
+
+          const isRhombus = ['T', 'R', 'B', 'L'].every(d => {
+            const data = symmetryGridState[`${cellKeyBase}_${d}`];
+            return data && data.pieceType === 'rhombus';
+          });
+
+          if (isRhombus) {
+            ['T', 'R', 'B', 'L'].forEach(d => renderedKeys.add(`${cellKeyBase}_${d}`));
+            const rhombusPoly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            rhombusPoly.setAttribute("points", `${cx},${y0} ${x1},${cy} ${cx},${y1} ${x0},${cy}`);
+            rhombusPoly.setAttribute("fill", "#10b981");
+            rhombusPoly.setAttribute("stroke", "#047857");
+            rhombusPoly.setAttribute("stroke-width", "2.5");
+            svg.appendChild(rhombusPoly);
+            continue;
+          }
+
+          const bigTriPairs = [
+            { dirs: ['T', 'R'], points: `${x0},${y0} ${x1},${y0} ${x1},${y1}` },
+            { dirs: ['B', 'R'], points: `${x1},${y0} ${x1},${y1} ${x0},${y1}` },
+            { dirs: ['B', 'L'], points: `${x1},${y1} ${x0},${y1} ${x0},${y0}` },
+            { dirs: ['T', 'L'], points: `${x0},${y1} ${x0},${y0} ${x1},${y0}` }
+          ];
+
+          for (const btp of bigTriPairs) {
+            const k1 = `${cellKeyBase}_${btp.dirs[0]}`, k2 = `${cellKeyBase}_${btp.dirs[1]}`;
+            const d1 = symmetryGridState[k1], d2 = symmetryGridState[k2];
+            if (d1 && d2 && d1.pieceType === 'big_tri' && d2.pieceType === 'big_tri' && !renderedKeys.has(k1) && !renderedKeys.has(k2)) {
+              renderedKeys.add(k1); renderedKeys.add(k2);
+              const bigPoly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+              bigPoly.setAttribute("points", btp.points);
+              bigPoly.setAttribute("fill", "#2563eb");
+              bigPoly.setAttribute("stroke", "#1d4ed8");
+              bigPoly.setAttribute("stroke-width", "2.5");
+              svg.appendChild(bigPoly);
+              break;
+            }
+          }
+
+          const triConfigs = [
+            { dir: 'T', points: `${x0},${y0} ${x1},${y0} ${cx},${cy}` },
+            { dir: 'R', points: `${x1},${y0} ${x1},${y1} ${cx},${cy}` },
+            { dir: 'B', points: `${x0},${y1} ${x1},${y1} ${cx},${cy}` },
+            { dir: 'L', points: `${x0},${y0} ${x0},${y1} ${cx},${cy}` }
+          ];
+
+          triConfigs.forEach(tc => {
+            const key = `${cellKeyBase}_${tc.dir}`;
+            if (renderedKeys.has(key)) return;
+            const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            poly.setAttribute("points", tc.points);
+            const cellData = symmetryGridState[key];
+            if (cellData) {
+              poly.setAttribute("fill", "#f59e0b");
+              poly.setAttribute("stroke", "#b45309");
+              poly.setAttribute("stroke-width", "2");
+            } else {
+              poly.setAttribute("fill", "#ffffff");
+              poly.setAttribute("stroke", "#cbd5e1");
+              poly.setAttribute("stroke-width", "1");
+            }
+            poly.onclick = () => onUserClickSymmetryTriangle(r, c, tc.dir);
+            svg.appendChild(poly);
+          });
+        }
+      }
+
+      const redLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      redLine.setAttribute("x1", 180); redLine.setAttribute("y1", 10);
+      redLine.setAttribute("x2", 180); redLine.setAttribute("y2", 350);
+      redLine.setAttribute("stroke", "#ef4444"); redLine.setAttribute("stroke-width", "5");
+      redLine.setAttribute("stroke-linecap", "round");
+      svg.appendChild(redLine);
+    }
+
+    function onUserClickSymmetryTriangle(r, c, dir) {
+      if (isSymmetryGameOver) return;
+      const clickedKey = `${r}_${c}_${dir}`;
+      let targetKeys = [];
+      let pieceColor = "#f59e0b";
+      let pieceType = selectedSymmPieceType;
+
+      if (pieceType === 'small_tri') {
+        targetKeys = [clickedKey];
+        pieceColor = "#f59e0b";
+      } else if (pieceType === 'big_tri') {
+        pieceColor = "#2563eb";
+        if (c <= 1) {
+          if (dir === 'R') targetKeys = [`${r}_${c}_R`, `${r}_${c}_T`];
+          else if (dir === 'T') targetKeys = [`${r}_${c}_T`, `${r}_${c}_R`];
+          else if (dir === 'B') targetKeys = [`${r}_${c}_B`, `${r}_${c}_R`];
+          else targetKeys = [`${r}_${c}_L`, `${r}_${c}_T`];
+        } else {
+          if (dir === 'L') targetKeys = [`${r}_${c}_L`, `${r}_${c}_T`];
+          else if (dir === 'T') targetKeys = [`${r}_${c}_T`, `${r}_${c}_L`];
+          else if (dir === 'B') targetKeys = [`${r}_${c}_B`, `${r}_${c}_L`];
+          else targetKeys = [`${r}_${c}_R`, `${r}_${c}_T`];
+        }
+      } else if (pieceType === 'rhombus') {
+        pieceColor = "#10b981";
+        targetKeys = [`${r}_${c}_T`, `${r}_${c}_R`, `${r}_${c}_B`, `${r}_${c}_L`];
+      }
+
+      if (targetKeys.some(k => symmetryGridState[k])) {
+        showToast('배치 불가', '조각을 놓을 빈 공간이 부족해요!', 'error');
+        triggerSound('wrong');
+        return;
+      }
+
+      targetKeys.forEach(k => {
+        symmetryGridState[k] = { color: pieceColor, owner: 'user', pieceType: pieceType };
+      });
+      lastUserPlacedKeys = [...targetKeys];
+
+      triggerSound('chat');
+      renderSymmetrySvgBoard();
+      updateFillPercentage();
+
+      if (checkCompleteSymmetry()) {
+        celebrateSymmetrySuccess();
+        return;
+      }
+      if (isSymmetryPermanentlyBroken()) {
+        triggerEarlyFailure("서로 다른 모양 조각이 마주 보게 되어 더 이상 대칭을 만들 수 없어요!");
+        return;
+      }
+
+      document.getElementById('symm-status-message').innerText = "🤖 컴퓨터가 생각 중입니다...";
+      setTimeout(() => { computerTurn(r, c, dir, pieceType); }, 700);
+    }
+
+    function isSymmetryPermanentlyBroken() {
+      const placedKeys = Object.keys(symmetryGridState);
+      for (let key of placedKeys) {
+        const parts = key.split('_');
+        const r = parseInt(parts[0], 10), c = parseInt(parts[1], 10), dir = parts[2];
+        const targetC = 3 - c;
+        const targetDir = (dir === 'L') ? 'R' : (dir === 'R') ? 'L' : dir;
+        const mirrorKey = `${r}_${targetC}_${targetDir}`;
+        if (symmetryGridState[mirrorKey] && symmetryGridState[mirrorKey].pieceType !== symmetryGridState[key].pieceType) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function triggerEarlyFailure(reasonText) {
+      isSymmetryGameOver = true;
+      symmetryFailuresCount++;
+      updateSymmetryCounters();
+      triggerSound('wrong');
+
+      const evalBox = document.getElementById('symm-eval-box');
+      evalBox.className = "mt-4 p-3.5 bg-rose-50 border border-rose-300 rounded-2xl text-center text-xs font-bold text-rose-900";
+      evalBox.innerHTML = `⚠️ 아쉽지만 다음기회에... (${reasonText})`;
+
+      const modal = document.getElementById('symm-final-modal');
+      modal.classList.remove('hidden');
+      modal.className = "mt-4 p-5 rounded-2xl bg-gradient-to-r from-rose-50 to-amber-50 border-2 border-rose-300 text-center shadow-md animate-fade-in";
+      modal.innerHTML = `
+        <div class="text-3xl mb-1">🥺</div>
+        <h4 class="font-jua text-lg text-rose-950">"아쉽지만 다음기회에..."</h4>
+        <p class="text-xs text-rose-800 mt-1 mb-3 font-semibold">대칭이 어긋났어요! 다음 판은 성공 확률이 더 높아집니다.</p>
+        <button onclick="resetSymmetryGame()" class="px-6 py-2.5 bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-700 text-white rounded-xl font-jua text-sm transition shadow active:scale-95 flex items-center justify-center gap-1.5 mx-auto">
+          <i class="fa-solid fa-rotate-left"></i> 재도전? (다시 도전하기)
+        </button>
+      `;
+
+      addRecord({
+        topic: "빨간선 기준 선대칭도형 - 대칭 어긋남",
+        isCorrect: false,
+        userAnswer: "대칭 깨짐",
+        correctAnswer: "좌우 선대칭",
+        timeSpent: 0,
+        hintCount: 0
+      });
+    }
+
+    function computerTurn(lastUserR, lastUserC, lastUserDir, lastPieceType) {
+      if (isSymmetryGameOver) return;
+      let placed = false;
+      const cooperativeProb = Math.min(0.95, 0.70 + symmetryFailuresCount * 0.10);
+      const isCooperative = Math.random() < cooperativeProb;
+
+      if (isCooperative && lastUserPlacedKeys.length > 0) {
+        let mirrorKeys = [];
+        let mirrorColor = "#f59e0b";
+
+        if (lastPieceType === 'small_tri') {
+          mirrorColor = "#f59e0b";
+          const oppC = 3 - lastUserC;
+          const oppDir = (lastUserDir === 'L') ? 'R' : (lastUserDir === 'R') ? 'L' : lastUserDir;
+          mirrorKeys = [`${lastUserR}_${oppC}_${oppDir}`];
+        } else if (lastPieceType === 'big_tri') {
+          mirrorColor = "#2563eb";
+          mirrorKeys = lastUserPlacedKeys.map(k => {
+            const [pr, pc, pd] = k.split('_');
+            const oppC = 3 - parseInt(pc, 10);
+            const oppDir = (pd === 'L') ? 'R' : (pd === 'R') ? 'L' : pd;
+            return `${pr}_${oppC}_${oppDir}`;
+          });
+        } else if (lastPieceType === 'rhombus') {
+          mirrorColor = "#10b981";
+          const oppC = 3 - lastUserC;
+          mirrorKeys = [`${lastUserR}_${oppC}_T`, `${lastUserR}_${oppC}_R`, `${lastUserR}_${oppC}_B`, `${lastUserR}_${oppC}_L`];
+        }
+
+        if (mirrorKeys.length > 0 && mirrorKeys.every(k => !symmetryGridState[k])) {
+          mirrorKeys.forEach(k => {
+            symmetryGridState[k] = { color: mirrorColor, owner: 'computer', pieceType: lastPieceType };
+          });
+          placed = true;
+        }
+      }
+
+      if (!placed) {
+        const availablePieces = ['small_tri', 'big_tri', 'rhombus'];
+        const chosenPiece = availablePieces[Math.floor(Math.random() * availablePieces.length)];
+        let chosenColor = (chosenPiece === 'small_tri') ? "#f59e0b" : (chosenPiece === 'big_tri') ? "#2563eb" : "#10b981";
+        let safeCandidates = [];
+
+        for (let r = 0; r < 4; r++) {
+          if (chosenPiece === 'small_tri') {
+            ['T', 'R', 'B', 'L'].forEach(d => {
+              const kLeft = `${r}_1_${d}`, kRight = `${r}_2_${(d === 'L') ? 'R' : (d === 'R') ? 'L' : d}`;
+              if (!symmetryGridState[kLeft] && !symmetryGridState[kRight]) {
+                safeCandidates.push([Math.random() < 0.5 ? kLeft : kRight]);
+              }
+            });
+          }
+        }
+        if (safeCandidates.length > 0) {
+          const chosenGroup = safeCandidates[Math.floor(Math.random() * safeCandidates.length)];
+          chosenGroup.forEach(k => {
+            symmetryGridState[k] = { color: chosenColor, owner: 'computer', pieceType: chosenPiece };
+          });
+        }
+      }
+
+      triggerSound('chat');
+      renderSymmetrySvgBoard();
+      updateFillPercentage();
+
+      if (checkCompleteSymmetry()) {
+        celebrateSymmetrySuccess();
+      } else if (isSymmetryPermanentlyBroken()) {
+        triggerEarlyFailure("대칭이 어긋났어요!");
+      } else {
+        document.getElementById('symm-status-message').innerText = "👈 만두의 차례! 대칭이 되도록 알맞은 조각을 놔보세요!";
+      }
+    }
+
+    function checkCompleteSymmetry() {
+      const placedKeys = Object.keys(symmetryGridState);
+      if (placedKeys.length < 4) return false;
+      for (let key of placedKeys) {
+        const parts = key.split('_');
+        const r = parseInt(parts[0], 10), c = parseInt(parts[1], 10), dir = parts[2];
+        const targetC = 3 - c;
+        const targetDir = (dir === 'L') ? 'R' : (dir === 'R') ? 'L' : dir;
+        const mirrorKey = `${r}_${targetC}_${targetDir}`;
+        if (!symmetryGridState[mirrorKey] || symmetryGridState[mirrorKey].pieceType !== symmetryGridState[key].pieceType) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function updateFillPercentage() {
+      const filled = Object.keys(symmetryGridState).length;
+      const pct = Math.round((filled / 64) * 100);
+      document.getElementById('symm-fill-pct').innerText = `${pct}%`;
+      return pct;
+    }
+
+    function celebrateSymmetrySuccess() {
+      isSymmetryGameOver = true;
+      symmetryFailuresCount = Math.max(0, symmetryFailuresCount - 1);
+      updateSymmetryCounters();
+      triggerSound('victory');
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      globalStars += 5;
+      globalCombo++;
+      updateHeaderStats();
+
+      addRecord({
+        topic: "빨간선 기준 선대칭도형 완성",
+        isCorrect: true,
+        userAnswer: "선대칭 완성",
+        correctAnswer: "좌우 선대칭",
+        timeSpent: 0,
+        hintCount: 0
+      });
+
+      const evalBox = document.getElementById('symm-eval-box');
+      evalBox.className = "mt-4 p-3.5 bg-emerald-100 border border-emerald-300 rounded-2xl text-center text-xs font-bold text-emerald-900 animate-bounce";
+      evalBox.innerHTML = `✨ 최고야! 완벽한 좌우 선대칭도형입니다!`;
+
+      const modal = document.getElementById('symm-final-modal');
+      modal.classList.remove('hidden');
+      modal.className = "mt-4 p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-center shadow-lg";
+      modal.innerHTML = `
+        <div class="text-4xl mb-1">🎉</div>
+        <h4 class="font-jua text-2xl text-emerald-950">"최고야! 완벽한 대칭을 만들었어!"</h4>
+        <p class="text-xs text-emerald-800 mt-1 mb-3 font-semibold">빨간선을 접었을 때 완전히 겹쳐지는 선대칭도형을 완성했단다!</p>
+        <button onclick="resetSymmetryGame()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-jua text-sm transition shadow-md active:scale-95">
+          🚀 다음 대칭 배틀 도전하기!
+        </button>
+      `;
+    }
+
+    /* ================= 3. MATH BATTLE ================= */
+    const mathBattleQuestions = [
+      {
+        type: "평행사변형 넓이",
+        baseHtml: () => renderFrac(3, 3, 4, 'cm'),
+        heightHtml: () => renderFrac(2, 2, 5, 'cm'),
+        qText: `밑변이 ${renderFrac(3, 3, 4, 'cm')}, 높이가 ${renderFrac(2, 2, 5, 'cm')}인 평행사변형의 넓이는 얼마일까요?`,
+        opts: ["8 cm²", "9 cm²", "10 1/2 cm²", "9 1/4 cm²"],
+        ans: "9 cm²",
+        hint: "밑변 × 높이 = 15/4 × 12/5 = 9 cm²"
+      },
+      {
+        type: "평행사변형 넓이",
+        baseHtml: () => renderFrac(4, 1, 6, 'cm'),
+        heightHtml: () => renderFrac(3, 3, 5, 'cm'),
+        qText: `밑변이 ${renderFrac(4, 1, 6, 'cm')}, 높이가 ${renderFrac(3, 3, 5, 'cm')}인 평행사변형의 넓이는 얼마일까요?`,
+        opts: ["12 cm²", "14 cm²", "15 cm²", "16 1/2 cm²"],
+        ans: "15 cm²",
+        hint: "25/6 × 18/5 = 15 cm²"
+      }
+    ];
+
+    let battleIdx = 0;
+    let battleTimer = 0;
+    let battleTimerInterval = null;
+
+    function loadMathStage1Question() {
+      if (battleIdx >= mathBattleQuestions.length) battleIdx = 0;
+      const q = mathBattleQuestions[battleIdx];
+      document.getElementById('m1-progress').innerText = `수학 배틀 ${battleIdx + 1} / ${mathBattleQuestions.length}`;
+      document.getElementById('m1-type').innerText = q.type;
+      document.getElementById('m1-question-box').innerHTML = q.qText;
+      document.getElementById('m1-feedback').innerHTML = "";
+
+      const diag = document.getElementById('m1-diagram-container');
+      diag.innerHTML = `
+        <div class="relative bg-white rounded-2xl border-2 border-indigo-200 p-3 w-full max-w-md mx-auto">
+          <svg viewBox="0 0 420 200" class="w-full h-auto">
+            <polygon points="100,40 320,40 260,130 40,130" fill="#e0e7ff" stroke="#4338ca" stroke-width="3"/>
+            <line x1="100" y1="40" x2="100" y2="130" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,4"/>
+            <text x="110" y="90" font-size="12" fill="#dc2626" font-weight="bold">높이: ${q.heightHtml()}</text>
+            <text x="130" y="155" font-size="12" fill="#2563eb" font-weight="bold">밑변: ${q.baseHtml()}</text>
+          </svg>
+        </div>
+      `;
+
+      const optBox = document.getElementById('m1-options-container');
+      optBox.innerHTML = "";
+      q.opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "p-3.5 bg-slate-50 hover:bg-indigo-50 border-2 border-slate-200 hover:border-indigo-400 text-slate-800 font-bold rounded-2xl transition text-left px-5 flex items-center justify-between shadow-xs";
+        btn.innerHTML = `<span>${opt}</span> <i class="fa-solid fa-crosshairs text-slate-300"></i>`;
+        btn.onclick = () => handleBattleAnswer(opt, q);
+        optBox.appendChild(btn);
+      });
+
+      clearInterval(battleTimerInterval);
+      battleTimer = 0;
+      battleTimerInterval = setInterval(() => {
+        battleTimer++;
+        document.getElementById('m1-timer').innerText = `${battleTimer}초`;
+      }, 1000);
+    }
+
+    function handleBattleAnswer(selected, q) {
+      clearInterval(battleTimerInterval);
+      const isCorrect = (selected === q.ans);
+      addRecord({
+        topic: q.type,
+        isCorrect: isCorrect,
+        userAnswer: selected,
+        correctAnswer: q.ans,
+        timeSpent: battleTimer,
+        hintCount: 0
+      });
+
+      const fb = document.getElementById('m1-feedback');
+      if (isCorrect) {
+        triggerSound('correct');
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+        globalStars += 3;
+        globalCombo++;
+        updateHeaderStats();
+        fb.className = "text-sm font-bold text-emerald-600";
+        fb.innerHTML = `⭕ 정답입니다! 몬스터에게 일격을 가했습니다!`;
+        document.getElementById('monster-hp-bar').style.width = "0%";
+        document.getElementById('monster-hp-text').innerText = "0";
+      } else {
+        triggerSound('wrong');
+        globalCombo = 0;
+        updateHeaderStats();
+        fb.className = "text-sm font-bold text-rose-500";
+        fb.innerHTML = `❌ 아쉬워요! 정답은 [${q.ans}] 입니다.`;
+      }
+
+      setTimeout(() => {
+        battleIdx = (battleIdx + 1) % mathBattleQuestions.length;
+        document.getElementById('monster-hp-bar').style.width = "100%";
+        document.getElementById('monster-hp-text').innerText = "100";
+        loadMathStage1Question();
+      }, 1600);
+    }
+
+    function showMathHint() {
+      const q = mathBattleQuestions[battleIdx];
+      const fb = document.getElementById('m1-feedback');
+      fb.className = "text-xs font-bold text-indigo-700 bg-indigo-50 p-2 rounded-xl border border-indigo-200";
+      fb.innerHTML = `💡 힌트: ${q.hint}`;
+    }
+
+    /* ================= MAIN SWITCH & DASHBOARD ================= */
+    function switchMathMode(mode) {
+      const views = {
+        chat_quest: document.getElementById('view-chat-quest'),
+        symmetry_game: document.getElementById('view-symmetry-game'),
+        math_battle: document.getElementById('view-math-battle')
+      };
+      const tabs = {
+        chat_quest: document.getElementById('tab-chat'),
+        symmetry_game: document.getElementById('tab-symmetry'),
+        math_battle: document.getElementById('tab-battle')
+      };
+
+      Object.keys(views).forEach(k => {
+        if (k === mode) {
+          views[k].classList.remove('hidden');
+          tabs[k].className = "px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-gradient-to-r from-pink-500 to-indigo-600 text-white shadow-sm flex items-center gap-1.5";
+        } else {
+          views[k].classList.add('hidden');
+          tabs[k].className = "px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-slate-100 text-slate-600 hover:text-indigo-600 flex items-center gap-1.5";
+        }
+      });
+
+      if (mode === 'chat_quest') selectChatScenario(currentScenarioKey);
+      else if (mode === 'symmetry_game') initSymmetryGame();
+      else if (mode === 'math_battle') loadMathStage1Question();
+    }
+
+    function openDashboardModal() {
+      updateDashboardStats();
+      document.getElementById('dashboard-modal').classList.remove('hidden');
+      document.getElementById('gas-url-field').value = GAS_APP_URL;
+    }
+    function closeDashboardModal() { document.getElementById('dashboard-modal').classList.add('hidden'); }
+    function saveGasSetting() {
+      const val = document.getElementById('gas-url-field').value.trim();
+      GAS_APP_URL = val;
+      localStorage.setItem('mandoo_gas_url', val);
+      showToast('저장 완료', 'Google Apps Script 연동 URL이 저장되었습니다.', 'success');
+    }
+    function clearStudyHistory() {
+      localStorage.removeItem('mandoo_math_records');
+      updateDashboardStats();
+      showToast('초기화', '사고력 수학 기록이 초기화되었습니다.', 'info');
+    }
+
+    function updateDashboardStats() {
+      const records = getLocalRecords();
+      const total = records.length;
+      const correctCount = records.filter(r => r.isCorrect).length;
+      const accuracy = total === 0 ? 0 : Math.round((correctCount / total) * 100);
+      const questCount = records.filter(r => r.isCorrect).length;
+
+      document.getElementById('dash-total').innerText = total;
+      document.getElementById('dash-acc').innerText = `${accuracy}%`;
+      document.getElementById('dash-combo').innerText = maxCombo;
+      document.getElementById('dash-quests').innerText = questCount;
+
+      const tbody = document.getElementById('dash-table-body');
+      tbody.innerHTML = "";
+      if (records.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">학습 기록이 없습니다.</td></tr>`;
+        return;
+      }
+      records.slice(0, 30).forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="p-2.5 text-slate-400 text-[11px]">${r.date ? r.date.split(' ')[1] : '-'}</td>
+          <td class="p-2.5 font-bold text-slate-800">${r.topic}</td>
+          <td class="p-2.5 text-center">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}">
+              ${r.isCorrect ? '정답' : '오답'}
+            </span>
+          </td>
+          <td class="p-2.5 text-[11px]">
+            <span class="font-bold ${r.isCorrect ? 'text-emerald-700' : 'text-rose-600'}">${r.userAnswer || '-'}</span>
+            ${r.isCorrect ? '' : `<span class="text-slate-400 block text-[10px]">(정답: ${r.correctAnswer || '-'})</span>`}
+          </td>
+          <td class="p-2.5 text-center text-slate-500">${r.timeSpent || 0}초</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function showToast(title, desc, type = 'info') {
+      const banner = document.getElementById('toast-banner');
+      banner.querySelector('h4').innerText = title;
+      banner.querySelector('p').innerText = desc;
+      banner.style.transform = "translateY(0)";
+      setTimeout(() => { banner.style.transform = "translateY(-150%)"; }, 3000);
+    }
+
+    window.addEventListener('load', () => {
+      updateHeaderStats();
+      selectChatScenario('space');
+      updateDashboardStats();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>안만두 전과목 퀘스트 (월·수·금)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;700;900&display=swap');
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ede9fe 50%, #fef3c7 100%);
+      min-height: 100vh;
+      user-select: none;
+    }
+    .font-jua { font-family: 'Jua', sans-serif; }
+    .shadow-soft { box-shadow: 0 10px 30px -5px rgba(124, 58, 237, 0.12), 0 8px 10px -6px rgba(124, 58, 237, 0.07); }
+    .animate-wiggle { animation: wiggle 2.5s ease-in-out infinite; }
+    @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+
+    /* 교과서 표준 가로줄 분수 스타일 */
+    .math-fraction {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 0.25rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .math-fraction .frac-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      min-width: 1.1em;
+    }
+    .math-fraction .frac-num { display: block; text-align: center; padding: 0 0.15rem 0.08rem; font-size: 0.95em; color: #1e1b4b; }
+    .math-fraction .frac-line { display: block; width: 100%; height: 2px; background-color: #1e293b; border-radius: 1px; margin: 1px 0; }
+    .math-fraction .frac-denom { display: block; text-align: center; padding: 0.08rem 0.15rem 0; font-size: 0.95em; color: #1e1b4b; }
+  </style>
+</head>
+<body class="p-3 sm:p-6 text-slate-800 flex flex-col items-center">
+
+  <!-- HEADER -->
+  <header class="w-full max-w-4xl bg-white/95 backdrop-blur-md rounded-3xl p-4 sm:p-5 shadow-soft border border-white/80 mb-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-200 flex items-center justify-center text-3xl shadow-md animate-wiggle">
+          🌟
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-jua text-xl sm:text-2xl text-slate-900">안만두 전과목 퀘스트</h1>
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full">주 3회 (월·수·금) 코스</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">국어 · 사회 · 과학 · 영어 (US G4-5) · 수학 연산</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-2xl flex items-center gap-2">
+          <span class="text-amber-500 text-lg">⭐</span>
+          <div>
+            <span class="text-[10px] text-amber-700 block font-bold leading-none">학습 별</span>
+            <span id="header-stars" class="font-jua text-sm sm:text-base text-amber-900">0개</span>
+          </div>
+        </div>
+        <div class="bg-indigo-50 border border-indigo-200 px-3.5 py-1.5 rounded-2xl flex items-center gap-2">
+          <span class="text-indigo-500 text-lg">🔥</span>
+          <div>
+            <span class="text-[10px] text-indigo-700 block font-bold leading-none">연속 콤보</span>
+            <span id="header-combo" class="font-jua text-sm sm:text-base text-indigo-900">0 콤보</span>
+          </div>
+        </div>
+        <button onclick="openDashboardModal()" class="px-3.5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl shadow-md transition text-xs sm:text-sm font-bold flex items-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span class="hidden sm:inline">선생님</span> 학습 관리
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN QUIZ CONTAINER -->
+  <main class="w-full max-w-4xl">
+    <section class="bg-white/95 backdrop-blur-md rounded-3xl p-5 sm:p-8 shadow-soft border border-white/80">
+      
+      <!-- Sub-Nav & Progress -->
+      <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
+        <div class="flex items-center gap-2">
+          <span id="other-badge" class="bg-purple-100 text-purple-800 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5">
+            <i class="fa-solid fa-graduation-cap"></i> <span>과목 퀴즈</span>
+          </span>
+          <span class="text-xs text-slate-500 font-bold" id="other-topic-tag">단원 탐험</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+            <button onclick="switchOtherSubject('korean')" id="subnav-korean" class="px-2.5 py-1 rounded-lg bg-white text-indigo-700 shadow-xs font-bold">국어</button>
+            <button onclick="switchOtherSubject('social')" id="subnav-social" class="px-2.5 py-1 rounded-lg text-slate-500 font-bold">사회</button>
+            <button onclick="switchOtherSubject('science')" id="subnav-science" class="px-2.5 py-1 rounded-lg text-slate-500 font-bold">과학</button>
+            <button onclick="switchOtherSubject('english')" id="subnav-english" class="px-2.5 py-1 rounded-lg text-slate-500 font-bold">영어</button>
+            <button onclick="switchOtherSubject('math_calc')" id="subnav-math_calc" class="px-2.5 py-1 rounded-lg text-slate-500 font-bold">수학 연산</button>
+          </div>
+          <div class="text-xs text-slate-500 font-medium flex items-center gap-1 ml-2">
+            <span>⏱️</span>
+            <span id="other-timer" class="font-mono text-purple-600 font-bold">0초</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Box -->
+      <div class="bg-gradient-to-r from-slate-50 to-purple-50/50 border-2 border-purple-100 rounded-3xl p-6 mb-5 min-h-[120px] flex flex-col items-center justify-center text-center">
+        <div id="other-q-icon" class="text-3xl mb-2">📚</div>
+        <p id="other-q-text" class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed max-w-xl">
+          문제를 불러오고 있습니다...
+        </p>
+      </div>
+
+      <!-- Multiple Choice Options -->
+      <div id="other-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4"></div>
+
+      <!-- Subject Complete Banner -->
+      <div id="subject-complete-banner" class="hidden mb-4 p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 border-2 border-emerald-300 text-center shadow-md animate-fade-in">
+        <div class="text-3xl mb-1">🎉</div>
+        <h4 id="subject-complete-title" class="font-jua text-lg text-emerald-950">과목 퀴즈 완료!</h4>
+        <p id="subject-complete-desc" class="text-xs text-slate-600 mt-1 mb-3">안만두 학생, 멋져요! 다음 과목 퀴즈에 도전해 볼까요?</p>
+        <button id="next-subject-btn" onclick="goToNextSubject()" class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 text-white rounded-xl font-jua text-sm transition shadow active:scale-95 flex items-center justify-center gap-2 mx-auto">
+          <span>다음 과목으로 넘어가기</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- ALL MISSION CLEAR FINAL REPORT -->
+      <div id="all-mission-clear-card" class="hidden mb-5 p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 text-white shadow-xl border-2 border-amber-300/60 animate-fade-in">
+        <div class="text-center mb-6">
+          <span class="inline-block px-4 py-1 rounded-full bg-amber-400 text-indigo-950 font-jua text-xs sm:text-sm font-black mb-2 shadow-md animate-bounce">
+            ⭐ ALL MISSION CLEAR ⭐
+          </span>
+          <h3 class="font-jua text-2xl sm:text-3xl text-amber-300">오늘 전과목 퀘스트 수고했어! 👏</h3>
+          <p class="text-xs sm:text-sm text-indigo-200 mt-1">안만두 학생, 국어·사회·과학·영어·수학연산 전과목을 완주했습니다!</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 text-center">
+          <div class="bg-white/10 rounded-2xl p-3 border border-white/10">
+            <span class="text-[11px] text-indigo-200 font-bold block">총 푼 문항</span>
+            <span id="clear-total-q" class="font-jua text-2xl text-white">18개</span>
+          </div>
+          <div class="bg-emerald-500/20 rounded-2xl p-3 border border-emerald-400/30">
+            <span class="text-[11px] text-emerald-200 font-bold block">정답률</span>
+            <span id="clear-acc-pct" class="font-jua text-2xl text-emerald-300">100%</span>
+          </div>
+          <div class="bg-amber-500/20 rounded-2xl p-3 border border-amber-400/30">
+            <span class="text-[11px] text-amber-200 font-bold block">정답 개수</span>
+            <span id="clear-correct-q" class="font-jua text-2xl text-amber-300">18개</span>
+          </div>
+          <div class="bg-rose-500/20 rounded-2xl p-3 border border-rose-400/30">
+            <span class="text-[11px] text-rose-200 font-bold block">오답(복습필요)</span>
+            <span id="clear-wrong-q" class="font-jua text-2xl text-rose-300">0개</span>
+          </div>
+        </div>
+
+        <div class="bg-white/95 rounded-2xl p-4 text-slate-800 shadow-inner mb-5">
+          <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200">
+            <h5 class="font-jua text-sm text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-clipboard-check text-indigo-600"></i> 안만두 오늘 정답 & 오답 분석 리포트
+            </h5>
+            <span class="text-[11px] text-slate-500 font-bold">오답 문항은 붉은색으로 표기됩니다</span>
+          </div>
+          <div id="clear-review-list" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1 text-xs"></div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <button onclick="restartAllQuizzes()" class="px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-rotate-left"></i> 처음부터 다시 풀기
+          </button>
+          <button onclick="openDashboardModal()" class="px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 text-indigo-950 rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow active:scale-95">
+            <i class="fa-solid fa-chalkboard-user"></i> 선생님 학습관리 창 열기
+          </button>
+        </div>
+      </div>
+
+      <!-- Hint & Feedback Area -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+        <button onclick="showOtherHint()" class="text-xs text-purple-600 hover:text-purple-800 font-bold flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 px-3.5 py-2 rounded-xl transition">
+          <i class="fa-regular fa-lightbulb text-amber-500"></i> 선생님 힌트 보기
+        </button>
+        <div id="other-feedback" class="text-sm font-bold min-h-[24px] flex items-center"></div>
+      </div>
+    </section>
+
+    <!-- TEACHER DASHBOARD MODAL -->
+    <div id="dashboard-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5 hidden">
+      <div class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        <div class="p-5 bg-gradient-to-r from-emerald-700 via-teal-700 to-indigo-800 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-2xl">📊</div>
+            <div>
+              <h3 class="font-jua text-xl">안만두 전과목 학습 리포트</h3>
+              <p class="text-xs text-emerald-200">Google 스프레드시트 실시간 동기화</p>
+            </div>
+          </div>
+          <button onclick="closeDashboardModal()" class="text-white/70 hover:text-white text-2xl transition p-1">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
+          <div class="bg-emerald-50/70 border border-emerald-200 p-4 rounded-2xl">
+            <label class="text-xs font-bold text-emerald-950 flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-cloud-arrow-up text-emerald-600"></i> Google Apps Script 웹앱 URL
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="gas-url-field" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-xs border border-emerald-200 bg-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400">
+              <button onclick="saveGasSetting()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition active:scale-95">저장</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-jua text-sm text-slate-800">풀이 기록 로그</h4>
+              <button onclick="clearStudyHistory()" class="text-xs text-rose-500 hover:underline font-bold">기록 초기화</button>
+            </div>
+            <div class="border border-slate-200 rounded-2xl overflow-hidden max-h-52 overflow-y-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 sticky top-0">
+                  <tr>
+                    <th class="p-2.5">시간</th>
+                    <th class="p-2.5">과목</th>
+                    <th class="p-2.5">주제</th>
+                    <th class="p-2.5 text-center">결과</th>
+                    <th class="p-2.5">답안 / 정답</th>
+                    <th class="p-2.5 text-center">소요시간</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-table-body" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-xs text-slate-400">학생명: <strong>안만두</strong> | 전과목 세트</span>
+          <button onclick="closeDashboardModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition">닫기</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* ================= AUDIO SYNTHESIZER ================= */
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let soundCtx = null;
+    function initAudio() {
+      if (!soundCtx) soundCtx = new AudioCtx();
+      if (soundCtx.state === 'suspended') soundCtx.resume();
+    }
+    function triggerSound(type) {
+      try {
+        initAudio();
+        const now = soundCtx.currentTime;
+        if (type === 'correct') {
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = soundCtx.createOscillator();
+            const gain = soundCtx.createGain();
+            osc.frequency.setValueAtTime(freq, now + i * 0.07);
+            gain.gain.setValueAtTime(0.2, now + i * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.25);
+            osc.connect(gain); gain.connect(soundCtx.destination);
+            osc.start(now + i * 0.07); osc.stop(now + i * 0.07 + 0.3);
+          });
+        } else if (type === 'wrong') {
+          const osc = soundCtx.createOscillator();
+          const gain = soundCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(240, now);
+          osc.frequency.linearRampToValueAtTime(130, now + 0.25);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.connect(gain); gain.connect(soundCtx.destination);
+          osc.start(now); osc.stop(now + 0.26);
+        } else if (type === 'victory') {
+          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach(f => {
+            const osc = soundCtx.createOscillator();
+            const gain = soundCtx.createGain();
+            osc.frequency.setValueAtTime(f, now);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+            osc.connect(gain); gain.connect(soundCtx.destination);
+            osc.start(now); osc.stop(now + 0.9);
+          });
+        }
+      } catch (e) {}
+    }
+
+    function renderFrac(num, denom) {
+      return `
+        <span class="math-fraction">
+          <span class="frac-stack">
+            <span class="frac-num">${num}</span>
+            <span class="frac-line"></span>
+            <span class="frac-denom">${denom}</span>
+          </span>
+        </span>
+      `;
+    }
+
+    /* ================= QUESTION BANK (5 과목) ================= */
+    const allSubjectsData = {
+      korean: [
+        { 
+          subject: "국어", topic: "속담의 의미 파악", 
+          q: "다음 중 '아무리 사소한 일이라도 정성을 다해 꾸준히 모아야 한다'는 뜻과 가장 잘 어울리는 속담은 무엇일까요?", 
+          opts: ["가는 말이 고와야 오는 말이 곱다", "소 잃고 외양간 고친다", "티끌 모아 태산", "닭 잡아먹고 오리발 내민다"], 
+          ans: "티끌 모아 태산", 
+          hint: "작은 흙먼지나 티끌이라도 차곡차곡 쌓이면 거대한 태산이 된다는 속담이에요!" 
+        },
+        { 
+          subject: "국어", topic: "관용어 표현", 
+          q: "친구가 새로운 일이나 어려운 도전을 주저하지 않고 시작할 때 알맞은 관용적 표현은?", 
+          opts: ["발을 벗고 나서다", "귀를 기울이다", "눈코 뜰 새 없다", "손에 땀을 쥐다"], 
+          ans: "발을 벗고 나서다", 
+          hint: "신발을 벗고 뛰어들 만큼 적극적이고 솔선수범하여 일에 나선다는 뜻이에요." 
+        },
+        { 
+          subject: "국어", topic: "사자성어", 
+          q: "'서로 다른 곳에 있지만 마음과 뜻이 하나로 통함'을 뜻하는 사자성어는 무엇일까요?", 
+          opts: ["이심전심 (以心傳心)", "작심삼일 (作心三日)", "동분서주 (東奔西走)", "전화위복 (轉禍爲福)"], 
+          ans: "이심전심 (以心傳心)", 
+          hint: "말을 길게 하지 않아도 마음에서 마음으로 뜻이 서로 전해진다는 의미의 성어예요!" 
+        },
+        { 
+          subject: "국어", topic: "올바른 맞춤법", 
+          q: "다음 문장 중에서 밑줄 친 단어의 맞춤법이 올바르게 쓰인 것은 무엇일까요?", 
+          opts: ["시간이 지나면 다 알게 됄 거야", "숙제를 먼저 끝내야 돼", "어제 피곤해서 일찍 잤되", "그 소문은 정말 안되보여"], 
+          ans: "숙제를 먼저 끝내야 돼", 
+          hint: "'하'를 넣어 자연스러우면 '되', '해'를 넣어 자연스러우면 '돼'입니다! (해야 해 ⭕ / 해야 하 ❌)" 
+        },
+        { 
+          subject: "국어", topic: "바른 띄어쓰기", 
+          q: "다음 중 띄어쓰기가 가장 올바른 문장을 골라보세요.", 
+          opts: ["우리는 내일 아침 일찍 출발할것이다.", "그는 만두를 배가 부를 만큼 먹었다.", "약속시간이 다 되었으니 빨리 가자.", "제주도로 떠난지 벌써 일주일이다."], 
+          ans: "그는 만두를 배가 부를 만큼 먹었다.", 
+          hint: "'만큼'은 앞의 용언(부를)을 꾸며주는 의존명사로 쓰일 때 반드시 앞말과 띄어 씁니다!" 
+        },
+        { 
+          subject: "국어", topic: "알맞은 조사와 접속 표현", 
+          q: "문맥에 맞는 조사와 접속사가 바르게 짝지어진 것은?<br><span class='text-sm bg-purple-50 text-purple-900 px-2 py-1 rounded font-bold inline-block mt-1'>\"만두는 수학( ㉠ ) 잘하고, ( ㉡ ) 국어에도 관심이 많다.\"</span>", 
+          opts: ["㉠ 도 , ㉡ 그리고", "㉠ 을 , ㉡ 하지만", "㉠ 과 , ㉡ 따라서", "㉠ 에 , ㉡ 그런데"], 
+          ans: "㉠ 도 , ㉡ 그리고", 
+          hint: "두 가지 사실을 대등하게 덧붙여 이어줄 때 쓰는 조사와 접속 부사예요." 
+        }
+      ],
+      social: [
+        { 
+          subject: "사회", topic: "우리나라 영토와 해양 자원", 
+          q: "우리나라 동쪽 끝에 위치하여 풍부한 천연가스와 해양 생태계를 품고 있는 소중한 화산섬은?", 
+          opts: ["마라도", "독도", "백령도", "거제도"], 
+          ans: "독도", 
+          hint: "대한민국 동쪽 끝, 울릉도 옆의 소중한 우리 영토입니다." 
+        },
+        { 
+          subject: "사회", topic: "지형과 주민 생활", 
+          q: "우리나라 지형의 가장 큰 특징으로, 동쪽은 높고 서쪽은 완만한 형태를 뜻하는 말은?", 
+          opts: ["동고서저", "남고북저", "동저서고", "분지 지형"], 
+          ans: "동고서저", 
+          hint: "태백산맥이 동쪽에 치우쳐 있어 동쪽이 높고(高) 서쪽이 낮습니다(低)." 
+        },
+        { 
+          subject: "사회", topic: "민주주의와 기본권", 
+          q: "국민이 스스로 나라의 주인이 되어 권력을 행사한다는 헌법상의 기본 원리는?", 
+          opts: ["국민 주권", "삼권 분립", "자유 시장", "법치주의"], 
+          ans: "국민 주권", 
+          hint: "대한민국 헌법 제1조 2항: 대한민국의 주권은 국민에게 있고, 모든 권력은 국민으로부터 나온다." 
+        }
+      ],
+      science: [
+        { 
+          subject: "과학", topic: "생태계와 먹이 그물", 
+          q: "햇빛, 물, 이산화탄소를 이용해 광합성을 하여 스스로 양분을 만들어내는 생태계 구성원은?", 
+          opts: ["생산자 (녹색 식물)", "1차 소비자 (초식 동물)", "2차 소비자 (육식 동물)", "분해자 (균류/세균)"], 
+          ans: "생산자 (녹색 식물)", 
+          hint: "스스로 양분을 만들어 먹이 그물의 기초가 되는 식물들을 의미해요." 
+        },
+        { 
+          subject: "과학", topic: "태양계와 행성", 
+          q: "태양계 행성 중 고리가 가장 뚜렷하고 아름다우며, 밀도가 물보다 낮아 물에 뜰 수 있는 행성은?", 
+          opts: ["목성", "토성", "천왕성", "해왕성"], 
+          ans: "토성", 
+          hint: "얼음과 암석 파편으로 이루어진 화려한 고리를 지닌 행성이에요." 
+        },
+        { 
+          subject: "과학", topic: "물질의 상태 변화", 
+          q: "얼음(고체)이 녹아 물(액체)이 되는 현상을 무엇이라고 부를까요?", 
+          opts: ["융해", "응고", "기화", "승화"], 
+          ans: "융해", 
+          hint: "고체가 열을 흡수하여 액체로 변하는 상태 변화를 뜻합니다." 
+        }
+      ],
+      english: [
+        { 
+          subject: "영어", topic: "US Grade 4-5: Irregular Verbs", 
+          q: "Choose the correct past tense verb to complete the sentence:<br><span class='text-sm bg-purple-50 text-indigo-950 px-2 py-1 rounded font-bold inline-block mt-1'>\"During our trip to Hawaii, Keanu ________ a sea turtle swimming near the reef.\"</span>", 
+          opts: ["saw", "seen", "seed", "sees"], 
+          ans: "saw", 
+          hint: "The simple past tense of the irregular verb 'see' is 'saw'." 
+        },
+        { 
+          subject: "영어", topic: "US Grade 4-5: Figurative Language", 
+          q: "Read the sentence and identify which phrase is a <strong>simile</strong>:<br><span class='text-sm bg-purple-50 text-indigo-950 px-2 py-1 rounded font-bold inline-block mt-1'>\"The warm tropical breeze was <u>as gentle as a whisper</u> on the sandy shore.\"</span>", 
+          opts: ["as gentle as a whisper", "tropical breeze", "sandy shore", "was gentle"], 
+          ans: "as gentle as a whisper", 
+          hint: "A simile compares two different things using the words 'like' or 'as'." 
+        },
+        { 
+          subject: "영어", topic: "US Grade 4-5: Subject-Verb Agreement", 
+          q: "Select the sentence with correct <strong>subject-verb agreement</strong>:", 
+          opts: [
+            "Neither of the boys wants to miss the soccer game.", 
+            "Neither of the boys want to miss the soccer game.", 
+            "The team of players are practicing right now.", 
+            "Each of the students have finished the reading log."
+          ], 
+          ans: "Neither of the boys wants to miss the soccer game.", 
+          hint: "'Neither' is a singular indefinite pronoun, so it takes the singular verb 'wants'." 
+        }
+      ],
+      math_calc: [
+        {
+          subject: "수학 연산", topic: "진분수의 곱셈",
+          q: `다음 진분수의 곱셈을 계산하고 기약분수로 나타내 보세요.<br><span class='text-xl inline-flex items-center gap-1.5 mt-2 bg-indigo-50 px-3 py-1 rounded-xl text-indigo-950 font-bold'>${renderFrac(3, 8)} × ${renderFrac(4, 9)} = ?</span>`,
+          opts: ["1/6", "1/4", "2/9", "3/16"],
+          optsHtml: [renderFrac(1, 6), renderFrac(1, 4), renderFrac(2, 9), renderFrac(3, 16)],
+          ans: "1/6",
+          hint: "분자 4와 분모 8을 4로 약분하고, 분자 3과 분모 9를 3으로 약분해 보세요! (1/2 × 1/3 = 1/6)"
+        },
+        {
+          subject: "수학 연산", topic: "세 자리 수 × 두 자리 수",
+          q: `다음 곱셈의 계산 결과는 얼마일까요?<br><span class='text-xl font-mono mt-2 inline-block bg-indigo-50 px-3 py-1 rounded-xl text-indigo-950 font-bold'>245 × 16 = ?</span>`,
+          opts: ["3,920", "3,820", "4,020", "3,960"],
+          ans: "3,920",
+          hint: "245 × 10 = 2,450 / 245 × 6 = 1,470 / 2,450 + 1,470 = 3,920"
+        },
+        {
+          subject: "수학 연산", topic: "세 자리 수 ÷ 두 자리 수",
+          q: `다음 나눗셈의 몫을 구해 보세요.<br><span class='text-xl font-mono mt-2 inline-block bg-indigo-50 px-3 py-1 rounded-xl text-indigo-950 font-bold'>756 ÷ 28 = ?</span>`,
+          opts: ["27", "26", "28", "25"],
+          ans: "27",
+          hint: "75 속에 28이 2번(56) 들어가고 남은 196 속에 28이 정확히 7번 들어갑니다."
+        }
+      ]
+    };
+
+    /* ================= STATE & STORAGE ================= */
+    let currentOtherSub = 'korean';
+    let otherIndex = 0;
+    let otherTimer = 0;
+    let otherTimerInterval = null;
+    let otherHintsUsed = 0;
+
+    const subjectSequence = ['korean', 'social', 'science', 'english', 'math_calc'];
+    let sessionCompletedSubjects = new Set();
+    let sessionQuizRecords = [];
+
+    let globalStars = parseInt(localStorage.getItem('mandoo_all_stars') || '0', 10);
+    let globalCombo = 0;
+    let maxCombo = parseInt(localStorage.getItem('mandoo_all_max_combo') || '0', 10);
+    let GAS_APP_URL = localStorage.getItem('mandoo_gas_url') || '';
+
+    function getLocalRecords() {
+      return JSON.parse(localStorage.getItem('mandoo_all_records') || '[]');
+    }
+
+    function addRecord(record) {
+      const records = getLocalRecords();
+      records.unshift({
+        id: Date.now(),
+        date: new Date().toLocaleString('ko-KR'),
+        ...record
+      });
+      localStorage.setItem('mandoo_all_records', JSON.stringify(records.slice(0, 300)));
+
+      if (GAS_APP_URL) {
+        fetch(GAS_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            student: "안만두",
+            subject: record.subject,
+            topic: record.topic,
+            isCorrect: record.isCorrect,
+            userAnswer: record.userAnswer,
+            correctAnswer: record.correctAnswer,
+            timeSpent: record.timeSpent || 0,
+            hintCount: record.hintCount || 0,
+            date: new Date().toLocaleString('ko-KR')
+          })
+        }).catch(() => {});
+      }
+      updateDashboardStats();
+    }
+
+    function updateHeaderStats() {
+      document.getElementById('header-stars').innerText = `${globalStars}개`;
+      document.getElementById('header-combo').innerText = `${globalCombo} 콤보`;
+    }
+
+    function switchOtherSubject(sub) {
+      currentOtherSub = sub;
+      subjectSequence.forEach(s => {
+        const btn = document.getElementById(`subnav-${s}`);
+        if (btn) btn.className = (s === sub) ? "px-2.5 py-1 rounded-lg bg-white text-indigo-700 shadow-xs font-bold" : "px-2.5 py-1 rounded-lg text-slate-500 font-bold";
+      });
+      document.getElementById('subject-complete-banner').classList.add('hidden');
+      document.getElementById('all-mission-clear-card').classList.add('hidden');
+      document.getElementById('other-options-container').classList.remove('hidden');
+      otherIndex = 0;
+      loadOtherQuestion();
+    }
+
+    function startOtherTimer() {
+      clearInterval(otherTimerInterval);
+      otherTimer = 0;
+      document.getElementById('other-timer').innerText = `0초`;
+      otherTimerInterval = setInterval(() => {
+        otherTimer++;
+        document.getElementById('other-timer').innerText = `${otherTimer}초`;
+      }, 1000);
+    }
+
+    function loadOtherQuestion() {
+      const qList = allSubjectsData[currentOtherSub] || [];
+      if (qList.length === 0) return;
+
+      if (otherIndex >= qList.length) {
+        showSubjectComplete();
+        return;
+      }
+
+      document.getElementById('subject-complete-banner').classList.add('hidden');
+      document.getElementById('all-mission-clear-card').classList.add('hidden');
+      document.getElementById('other-options-container').classList.remove('hidden');
+
+      const q = qList[otherIndex];
+      const iconMap = { korean: "📖", social: "🌏", science: "🔬", english: "🌺", math_calc: "🔢" };
+      const subNameMap = { korean: "국어", social: "사회", science: "과학", english: "영어 (US G4-5)", math_calc: "수학 연산" };
+
+      document.getElementById('other-badge').innerHTML = `<i class="fa-solid fa-graduation-cap"></i> <span>${subNameMap[currentOtherSub]} (${otherIndex + 1}/${qList.length})</span>`;
+      document.getElementById('other-topic-tag').innerText = q.topic;
+      document.getElementById('other-q-icon').innerText = iconMap[currentOtherSub] || "📚";
+      document.getElementById('other-q-text').innerHTML = q.q;
+      document.getElementById('other-feedback').innerHTML = "";
+
+      const optBox = document.getElementById('other-options-container');
+      optBox.innerHTML = "";
+
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = "p-4 bg-slate-50 hover:bg-purple-50 border-2 border-slate-200 hover:border-purple-400 text-slate-800 font-bold rounded-2xl transition text-left px-5 flex items-center justify-between shadow-xs active:scale-95 text-xs sm:text-sm";
+        const label = q.optsHtml ? q.optsHtml[i] : opt;
+        btn.innerHTML = `<span>${label}</span> <i class="fa-solid fa-circle-check text-slate-300"></i>`;
+        btn.onclick = () => handleOtherAnswer(opt, btn, q);
+        optBox.appendChild(btn);
+      });
+
+      otherHintsUsed = 0;
+      startOtherTimer();
+    }
+
+    function handleOtherAnswer(selected, btn, q) {
+      clearInterval(otherTimerInterval);
+      const isCorrect = (selected === q.ans);
+
+      document.querySelectorAll('#other-options-container button').forEach(b => b.disabled = true);
+
+      const recordItem = {
+        subject: q.subject,
+        topic: q.topic,
+        isCorrect: isCorrect,
+        userAnswer: selected,
+        correctAnswer: q.ans,
+        timeSpent: otherTimer,
+        hintCount: otherHintsUsed
+      };
+      addRecord(recordItem);
+      sessionQuizRecords.push(recordItem);
+
+      const fb = document.getElementById('other-feedback');
+      if (isCorrect) {
+        triggerSound('correct');
+        confetti({ particleCount: 45, spread: 55, origin: { y: 0.7 } });
+        btn.classList.remove('bg-slate-50', 'border-slate-200');
+        btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
+        globalCombo++;
+        if (globalCombo > maxCombo) {
+          maxCombo = globalCombo;
+          localStorage.setItem('mandoo_all_max_combo', maxCombo);
+        }
+        globalStars += 2;
+        localStorage.setItem('mandoo_all_stars', globalStars);
+        updateHeaderStats();
+        fb.className = "text-xs sm:text-sm font-bold text-emerald-600 flex items-center gap-1.5";
+        fb.innerHTML = `<i class="fa-solid fa-circle-check"></i> 참 잘했어요! 정답입니다.`;
+      } else {
+        triggerSound('wrong');
+        btn.classList.remove('bg-slate-50', 'border-slate-200');
+        btn.classList.add('bg-rose-50', 'border-rose-400', 'text-rose-700');
+        globalCombo = 0;
+        updateHeaderStats();
+        fb.className = "text-xs sm:text-sm font-bold text-rose-500 flex items-center gap-1.5";
+        fb.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 정답은 [${q.ans}] 입니다.`;
+      }
+
+      setTimeout(() => {
+        otherIndex++;
+        loadOtherQuestion();
+      }, 1600);
+    }
+
+    function showSubjectComplete() {
+      clearInterval(otherTimerInterval);
+      triggerSound('victory');
+      sessionCompletedSubjects.add(currentOtherSub);
+
+      const subNameMap = { korean: "국어", social: "사회", science: "과학", english: "영어", math_calc: "수학 연산" };
+      const currentName = subNameMap[currentOtherSub];
+      const currentPos = subjectSequence.indexOf(currentOtherSub);
+
+      if (currentPos === subjectSequence.length - 1 || sessionCompletedSubjects.size >= subjectSequence.length) {
+        showAllMissionClear();
+        return;
+      }
+
+      const nextSub = subjectSequence[currentPos + 1];
+      const nextName = subNameMap[nextSub];
+
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      document.getElementById('other-q-icon').innerText = "🏆";
+      document.getElementById('other-q-text').innerHTML = `<span class="text-emerald-700 font-jua text-xl">${currentName} 퀴즈 전 문항 클리어!</span><br><span class="text-xs text-slate-500 font-medium">안만두 학생, 멋져요! 다음 과목 퀴즈로 이동해 보세요.</span>`;
+      document.getElementById('other-options-container').classList.add('hidden');
+
+      const banner = document.getElementById('subject-complete-banner');
+      banner.classList.remove('hidden');
+      document.getElementById('all-mission-clear-card').classList.add('hidden');
+      document.getElementById('subject-complete-title').innerText = `${currentName} 퀴즈를 모두 완료했어요!`;
+      document.getElementById('subject-complete-desc').innerText = `다음 코스인 [${nextName}] 퀴즈로 바로 이동해 볼까요?`;
+
+      const nextBtn = document.getElementById('next-subject-btn');
+      nextBtn.innerHTML = `<span>다음 과목 (${nextName})으로 넘어가기</span> <i class="fa-solid fa-arrow-right"></i>`;
+    }
+
+    function showAllMissionClear() {
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+      document.getElementById('subject-complete-banner').classList.add('hidden');
+      document.getElementById('other-options-container').classList.add('hidden');
+
+      const clearCard = document.getElementById('all-mission-clear-card');
+      clearCard.classList.remove('hidden');
+      document.getElementById('other-q-icon').innerText = "👑";
+      document.getElementById('other-q-text').innerHTML = `<span class="text-indigo-900 font-jua text-2xl">전과목 코스 최종 완주 달성!</span><br><span class="text-xs text-slate-500 font-bold">국어, 사회, 과학, 영어, 수학연산 퀴즈를 모두 성공적으로 마쳤습니다.</span>`;
+
+      const totalQ = sessionQuizRecords.length;
+      const correctQ = sessionQuizRecords.filter(r => r.isCorrect).length;
+      const wrongQ = totalQ - correctQ;
+      const accPct = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
+
+      document.getElementById('clear-total-q').innerText = `${totalQ}개`;
+      document.getElementById('clear-correct-q').innerText = `${correctQ}개`;
+      document.getElementById('clear-wrong-q').innerText = `${wrongQ}개`;
+      document.getElementById('clear-acc-pct').innerText = `${accPct}%`;
+
+      const reviewList = document.getElementById('clear-review-list');
+      reviewList.innerHTML = "";
+      sessionQuizRecords.forEach(rec => {
+        const item = document.createElement('div');
+        item.className = `p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${rec.isCorrect ? 'bg-emerald-50/60 border-emerald-200 text-slate-800' : 'bg-rose-50 border-rose-300 text-rose-950'}`;
+        item.innerHTML = `
+          <div class="flex items-start gap-2">
+            <span class="text-sm font-black mt-0.5 ${rec.isCorrect ? 'text-emerald-600' : 'text-rose-600'}">${rec.isCorrect ? '⭕ 정답' : '❌ 오답'}</span>
+            <div>
+              <span class="font-bold block">[${rec.subject}] ${rec.topic}</span>
+              <span class="text-[11px] ${rec.isCorrect ? 'text-slate-500' : 'text-rose-800 font-semibold'}">
+                만두 답안: <strong>${rec.userAnswer}</strong> ${rec.isCorrect ? '' : `(정답: ${rec.correctAnswer})`}
+              </span>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <span class="text-[10px] text-slate-400 font-bold">소요 시간: ${rec.timeSpent}초</span>
+          </div>
+        `;
+        reviewList.appendChild(item);
+      });
+    }
+
+    function goToNextSubject() {
+      triggerSound('chat');
+      const currentPos = subjectSequence.indexOf(currentOtherSub);
+      if (currentPos < subjectSequence.length - 1) {
+        switchOtherSubject(subjectSequence[currentPos + 1]);
+      } else {
+        showAllMissionClear();
+      }
+    }
+
+    function restartAllQuizzes() {
+      triggerSound('chat');
+      sessionCompletedSubjects.clear();
+      sessionQuizRecords = [];
+      switchOtherSubject('korean');
+    }
+
+    function showOtherHint() {
+      otherHintsUsed++;
+      const q = allSubjectsData[currentOtherSub][otherIndex];
+      const fb = document.getElementById('other-feedback');
+      fb.className = "text-xs font-bold text-purple-800 bg-purple-50 p-2.5 rounded-xl border border-purple-200";
+      fb.innerHTML = `<i class="fa-regular fa-lightbulb text-amber-500"></i> 힌트: ${q.hint}`;
+    }
+
+    /* ================= DASHBOARD CONTROLS ================= */
+    function openDashboardModal() {
+      updateDashboardStats();
+      document.getElementById('dashboard-modal').classList.remove('hidden');
+      document.getElementById('gas-url-field').value = GAS_APP_URL;
+    }
+    function closeDashboardModal() { document.getElementById('dashboard-modal').classList.add('hidden'); }
+    function saveGasSetting() {
+      const val = document.getElementById('gas-url-field').value.trim();
+      GAS_APP_URL = val;
+      localStorage.setItem('mandoo_gas_url', val);
+      alert('Google Apps Script 연동 URL이 저장되었습니다.');
+    }
+    function clearStudyHistory() {
+      localStorage.removeItem('mandoo_all_records');
+      updateDashboardStats();
+      alert('전과목 풀이 기록이 초기화되었습니다.');
+    }
+
+    function updateDashboardStats() {
+      const records = getLocalRecords();
+      const tbody = document.getElementById('dash-table-body');
+      tbody.innerHTML = "";
+      if (records.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">아직 학습 기록이 없습니다.</td></tr>`;
+        return;
+      }
+      records.slice(0, 30).forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="p-2.5 text-slate-400 text-[11px]">${r.date ? r.date.split(' ')[1] : '-'}</td>
+          <td class="p-2.5 font-bold text-indigo-700">${r.subject}</td>
+          <td class="p-2.5 text-slate-700 font-medium">${r.topic}</td>
+          <td class="p-2.5 text-center">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}">${r.isCorrect ? '정답' : '오답'}</span>
+          </td>
+          <td class="p-2.5 text-[11px]">
+            <span class="font-bold ${r.isCorrect ? 'text-emerald-700' : 'text-rose-600'}">${r.userAnswer || '-'}</span>
+            ${r.isCorrect ? '' : `<span class="text-slate-400 block text-[10px]">(정답: ${r.correctAnswer || '-'})</span>`}
+          </td>
+          <td class="p-2.5 text-center text-slate-500">${r.timeSpent || 0}초</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.addEventListener('load', () => {
+      updateHeaderStats();
+      switchOtherSubject('korean');
+    });
+  </script>
+</body>
+</html>
