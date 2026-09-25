@@ -225,7 +225,7 @@
         "나와 함께 만들어야 돼. 나는 아무 곳에나 둘 수도 있어, 너는 대칭이 될 수 있도록 놔야돼!"
       </p>
       <div style="font-size:0.82rem; color:#ef4444; font-weight:bold; margin-top:4px;" id="sym-fail-counter">
-        실패 횟수: 0회 (협동 성공률: 70%)
+        실패 횟수: 0회 (도전 성공률: 70%)
       </div>
     </div>
 
@@ -323,6 +323,7 @@
     if (stage === 'battle') loadBattleQuestion();
   }
 
+  /* ================= 1. 탐사 롤플레잉 엔진 (10문항 완벽 유지) ================= */
   let chatStep = 0;
   let selectedCuts = [];
   let chatCombo = 0;
@@ -520,7 +521,7 @@
     });
     container.appendChild(optGrid);
 
-    const fb = document.createElement('div');
+    const fb = document.getElementById('chat-feedback');
     fb.id = 'chat-feedback';
     fb.style.textAlign = 'center';
     fb.style.fontWeight = 'bold';
@@ -579,10 +580,11 @@
     }
   }
 
-  /* 2. 선대칭 모눈 퍼즐 */
+  /* ================= 2. 선대칭 모눈 퍼즐 (70% 성공률 & 지능형 상호작용 교체) ================= */
   let currentPieceType = 'small_tri';
   let gridState = Array(4).fill(null).map(() => Array(4).fill(null).map(() => ({ T: null, R: null, B: null, L: null })));
   let symFailCount = 0;
+  let symTurnCount = 0;
 
   function selectPiece(type) {
     currentPieceType = type;
@@ -594,6 +596,7 @@
 
   function initSymGame() {
     gridState = Array(4).fill(null).map(() => Array(4).fill(null).map(() => ({ T: null, R: null, B: null, L: null })));
+    symTurnCount = 0;
     document.getElementById('sym-next-box').classList.add('hidden');
     document.getElementById('sym-feedback').innerText = '👉 조각을 선택하고 빨간 대칭축 주변에 놓아보세요!';
     document.getElementById('sym-feedback').style.color = 'var(--text)';
@@ -615,12 +618,14 @@
         svg.appendChild(rect);
 
         const d1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        d1.setAttribute('x1', x); d1.setAttribute('y1', y); d1.setAttribute('x2', x + S); d1.setAttribute('y2', y + S);
+        d1.setAttribute('x1', x); d1.setAttribute('y1', y);
+        d1.setAttribute('x2', x + S); d1.setAttribute('y2', y + S);
         d1.setAttribute('stroke', '#e2e8f0');
         svg.appendChild(d1);
 
         const d2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        d2.setAttribute('x1', x + S); d2.setAttribute('y1', y); d2.setAttribute('x2', x); d2.setAttribute('y2', y + S);
+        d2.setAttribute('x1', x + S); d2.setAttribute('y1', y);
+        d2.setAttribute('x2', x); d2.setAttribute('y2', y + S);
         d2.setAttribute('stroke', '#e2e8f0');
         svg.appendChild(d2);
 
@@ -646,7 +651,8 @@
     }
 
     const symLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    symLine.setAttribute('x1', 160); symLine.setAttribute('y1', 0); symLine.setAttribute('x2', 160); symLine.setAttribute('y2', 320);
+    symLine.setAttribute('x1', 160); symLine.setAttribute('y1', 0);
+    symLine.setAttribute('x2', 160); symLine.setAttribute('y2', 320);
     symLine.setAttribute('stroke', '#ef4444'); symLine.setAttribute('stroke-width', '4');
     svg.appendChild(symLine);
   }
@@ -673,21 +679,28 @@
       gridState[r][c].B = '#10b981'; gridState[r][c].L = '#10b981';
     }
 
+    symTurnCount++;
     renderSymSVG();
 
     setTimeout(() => {
-      computerMove(r, c, sub);
+      computerAdaptiveMove(r, c, sub);
       renderSymSVG();
       checkSymmetryState();
     }, 400);
   }
 
-  function computerMove(userR, userC, userSub) {
-    const successProb = Math.min(0.95, 0.70 + symFailCount * 0.08);
+  function computerAdaptiveMove(userR, userC, userSub) {
     const mirrorC = 3 - userC;
     const mirrorSub = (userSub === 'L') ? 'R' : (userSub === 'R') ? 'L' : userSub;
 
-    if (Math.random() < successProb) {
+    // 1번째 턴 또는 3번째 턴에는 컴퓨터가 먼저 다른 위치에 문제를 제시
+    if (symTurnCount === 1 || symTurnCount === 3) {
+      placeChallengerPiece();
+      return;
+    }
+
+    // 70% 확률로 대칭 보조, 30% 확률로 새로운 도전 과제 제시
+    if (Math.random() < 0.70) {
       if (currentPieceType === 'small_tri' && !gridState[userR][mirrorC][mirrorSub]) {
         gridState[userR][mirrorC][mirrorSub] = '#f59e0b';
       } else if (currentPieceType === 'big_tri') {
@@ -702,6 +715,36 @@
           gridState[userR][mirrorC].B = '#10b981'; gridState[userR][mirrorC].L = '#10b981';
         }
       }
+    } else {
+      placeChallengerPiece();
+    }
+  }
+
+  function placeChallengerPiece() {
+    const emptyRows = [];
+    for (let r = 0; r < 4; r++) {
+      let isRowEmpty = true;
+      for (let c = 0; c < 4; c++) {
+        if (gridState[r][c].T || gridState[r][c].R || gridState[r][c].B || gridState[r][c].L) {
+          isRowEmpty = false;
+          break;
+        }
+      }
+      if (isRowEmpty) emptyRows.push(r);
+    }
+
+    const targetR = emptyRows.length > 0 ? emptyRows[0] : Math.floor(Math.random() * 4);
+    const targetC = 2 + Math.floor(Math.random() * 2);
+
+    if (!gridState[targetR][targetC].T && !gridState[targetR][targetC].R) {
+      gridState[targetR][targetC].T = '#2563eb';
+      gridState[targetR][targetC].R = '#2563eb';
+      document.getElementById('sym-feedback').innerText = '🤖 "내가 먼저 여기에 놓았어! 너는 반대편에 대칭이 되게 놓아봐!"';
+      document.getElementById('sym-feedback').style.color = '#2563eb';
+    } else if (!gridState[targetR][targetC].B) {
+      gridState[targetR][targetC].B = '#f59e0b';
+      document.getElementById('sym-feedback').innerText = '🤖 "내가 먼저 여기에 놓았어! 너는 반대편에 대칭이 되게 놓아봐!"';
+      document.getElementById('sym-feedback').style.color = '#f59e0b';
     }
   }
 
@@ -739,7 +782,7 @@
       logResult('사고력수학', '선대칭 퍼즐 완성', '완벽 대칭 성공', '선대칭', true, '빨간 대칭축을 중심으로 양쪽 모형이 정확히 포개어집니다.');
     } else if (!isSym && filled >= 12) {
       symFailCount++;
-      document.getElementById('sym-fail-counter').innerText = `실패 횟수: ${symFailCount}회 (협동 성공률: ${Math.round(Math.min(0.95, 0.70 + symFailCount * 0.08)*100)}%)`;
+      document.getElementById('sym-fail-counter').innerText = `실패 횟수: ${symFailCount}회 (도전 성공률: 70%)`;
       fb.style.color = '#ef4444';
       fb.innerText = '아쉽지만 다음 기회에... 대칭이 어긋났어요!';
       nextBox.classList.remove('hidden');
@@ -747,7 +790,7 @@
     }
   }
 
-  /* 3. 평행사변형 배틀 */
+  /* ================= 3. 평행사변형 배틀 (2단계 풀코스 완벽 유지) ================= */
   let monsterHp = 100;
   let battleIdx = 0;
   const battleQuestions = [
@@ -839,6 +882,7 @@
     });
   }
 
+  /* ================= 4. 선생님 관리 및 로깅 ================= */
   function logResult(subject, qName, userAns, correctAns, isCorrect, explain) {
     const record = {
       date: new Date().toLocaleTimeString(),
