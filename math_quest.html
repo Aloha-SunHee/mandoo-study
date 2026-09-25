@@ -33,7 +33,7 @@
       max-width: 620px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
     .header {
       background: var(--card-bg);
@@ -45,6 +45,32 @@
       align-items: center;
     }
     .header h1 { font-size: 1.15rem; margin: 0; color: #4338ca; }
+
+    /* 주차 선택 바 */
+    .week-selector-card {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .week-label { font-size: 0.88rem; font-weight: bold; color: #3730a3; white-space: nowrap; }
+    .week-select {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #a5b4fc;
+      background: white;
+      font-weight: bold;
+      color: #312e81;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+    }
+
     .nav-tabs {
       display: flex;
       background: #e2e8f0;
@@ -202,6 +228,15 @@
     <button style="border:none; background: #e0e7ff; color:#4338ca; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="openTeacherModal()">📋 학습관리</button>
   </div>
 
+  <!-- 주차 및 회차 선택 바 -->
+  <div class="week-selector-card">
+    <span class="week-label">📚 단원 선택:</span>
+    <select class="week-select" id="week-select" onchange="onWeekChange(this.value)">
+      <option value="week1">1주차: 분수 곱셈 & 선대칭·합동 퀘스트</option>
+      <!-- 향후 2주차, 3주차가 이곳에 누적되어 동생들도 지난 단원을 선택해 풀 수 있습니다 -->
+    </select>
+  </div>
+
   <div class="nav-tabs">
     <button class="tab-btn active" id="tab-chat" onclick="switchStage('chat')">1. 탐사 롤플레잉</button>
     <button class="tab-btn" id="tab-sym" onclick="switchStage('sym')">2. 선대칭 퍼즐</button>
@@ -309,6 +344,147 @@
     return html;
   }
 
+  /* ================= 📚 주차별 아카이브 데이터베이스 ================= */
+  let currentWeek = 'week1';
+
+  const allQuestsDB = {
+    week1: {
+      title: "1주차: 분수 곱셈 & 선대칭·합동",
+      chatQuests: [
+        {
+          speaker: '🚀 우주비행사 루카',
+          text: `만두야 반가워! 우주복 무게는 지구에서 80 kg이야. 화성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 19, 50)}배래. 화성에서 잰 우주복의 무게는 얼마일까?`,
+          tip: `80 kg을 똑같이 50등분한 것 중 19묶음이라는 뜻이에요!`,
+          extraHint: `80 × 19/50 식을 세우고 분모와 분자를 10으로 약분해 보세요!`,
+          opts: [`${renderFrac(30, 2, 5)} kg`, `${renderFrac(32, 1, 5)} kg`, `${renderFrac(28, 4, 5)} kg`, `${renderFrac(30, 4, 5)} kg`],
+          ans: `${renderFrac(30, 2, 5)} kg`,
+          explain: `80 × 19/50 = (8 × 19)/5 = 152/5 = 30과 2/5 kg이 됩니다.`
+        },
+        {
+          speaker: '🚀 우주비행사 루카',
+          text: `이번에는 금성으로 가보자! 금성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 91, 100)}배래. 지구에서 80 kg인 우주복은 금성에서 몇 kg일까?`,
+          tip: `80 kg에 금성의 중력 비율을 곱해 보세요.`,
+          extraHint: `80 × 91/100 식을 세운 뒤 80과 100을 20으로 약분해 보세요!`,
+          opts: [`${renderFrac(72, 4, 5)} kg`, `${renderFrac(70, 2, 5)} kg`, `${renderFrac(74, 1, 5)} kg`, `${renderFrac(71, 3, 5)} kg`],
+          ans: `${renderFrac(72, 4, 5)} kg`,
+          explain: `80 × 91/100 = (4 × 91)/5 = 364/5 = 72와 4/5 kg이 됩니다.`
+        },
+        {
+          speaker: '🚀 우주비행사 루카',
+          text: `우주선에 전력을 공급할 직사각형 태양광 전지판을 조립해야 해. 가로가 ${renderFrac(1, 1, 3)} m이고 세로가 ${renderFrac(2, 3, 8)} m일 때 넓이는 얼마일까?`,
+          tip: `직사각형 넓이 = 가로 × 세로. 대분수를 가분수로 고쳐 계산하세요!`,
+          extraHint: `4/3 × 19/8 식을 세우고 4와 8을 먼저 약분해 보세요!`,
+          opts: [`${renderFrac(3, 1, 6)} m²`, `${renderFrac(3, 1, 3)} m²`, `${renderFrac(2, 5, 6)} m²`, `${renderFrac(3, 1, 2)} m²`],
+          ans: `${renderFrac(3, 1, 6)} m²`,
+          explain: `(4/3) × (19/8) = 19/6 = 3과 1/6 m²입니다.`
+        },
+        {
+          speaker: '🍳 셰프 한',
+          text: `만두 조수, 어서 와요! 15 kg 포대에 설탕이 9 kg 남아있어요. 이 중 ${renderFrac(null, 4, 9)}를 사용해 딸기잼을 만들려고 해요. 설탕은 몇 kg일까요?`,
+          tip: `남아있는 9 kg을 9등분한 것 중 4묶음이에요!`,
+          extraHint: `식: 9 × 4/9 로 바로 계산해 보세요!`,
+          opts: ['3 kg', '4 kg', '5 kg', `${renderFrac(4, 1, 2)} kg`],
+          ans: '4 kg',
+          explain: `9 × 4/9 = 4 kg입니다.`
+        },
+        {
+          speaker: '🍳 셰프 한',
+          text: `딸기잼을 만들고 남은 설탕은 5 kg이에요. 이제 이 남은 설탕의 ${renderFrac(null, 5, 6)}로 상큼한 레몬청을 만들려고 해요. 설탕은 몇 kg일까요?`,
+          tip: `남은 5 kg에 5/6를 곱해보세요!`,
+          extraHint: `식: 5 × 5/6 = 25/6 을 대분수로 바꿔보세요!`,
+          opts: [`${renderFrac(4, 1, 6)} kg`, `${renderFrac(4, 1, 3)} kg`, `${renderFrac(3, 5, 6)} kg`, `${renderFrac(4, 5, 6)} kg`],
+          ans: `${renderFrac(4, 1, 6)} kg`,
+          explain: `5 × 5/6 = 25/6 = 4와 1/6 kg입니다.`
+        },
+        {
+          speaker: '🍳 셰프 한',
+          text: `넓이가 12 m²인 직사각형 텃밭에서 파를 텃밭 전체의 ${renderFrac(null, 5, 8)}만큼 심었고, 배추는 파 넓이의 ${renderFrac(null, 2, 5)}만큼 심었대요. 배추 넓이는 몇 m²일까요?`,
+          tip: `12 m²에 두 분수를 차례대로 곱해보세요!`,
+          extraHint: `12 × 5/8 × 2/5 식에서 약분을 먼저 해보세요!`,
+          opts: ['2 m²', '3 m²', '4 m²', `${renderFrac(3, 1, 2)} m²`],
+          ans: '3 m²',
+          explain: `12 × (5/8) × (2/5) = 12 × 1/4 = 3 m²입니다.`
+        },
+        {
+          speaker: '👧 단짝 친구 채윤이',
+          text: `만두야! 우리가 체험관에서 관람할 수 있는 순수 시간은 총 4시간이래. 1시간이 60분이니까 4시간은 총 몇 분일까?`,
+          tip: `60 × 4를 계산해보세요!`,
+          extraHint: `60분씩 4번 더하면 얼마일까요?`,
+          opts: ['180분', '200분', '240분', '300분'],
+          ans: '240분',
+          explain: `60 × 4 = 240분입니다.`
+        },
+        {
+          speaker: '👧 단짝 친구 채윤이',
+          type: 'bar_split',
+          text: `우와 맞아! 총 240분이야. 그런데 ㉮구역은 4시간 중 딱 ${renderFrac(null, 1, 3)}만 관람할 수 있대. 240분을 3묶음으로 똑같이 나누려면 몇 분, 몇 분 지점을 잘라야 할까?`,
+          tip: `240 ÷ 3 = 80분이에요!`,
+          extraHint: `첫 번째는 80분, 두 번째는 160분 지점이에요!`,
+          explain: `240분을 3등분하면 한 조각당 80분이므로, 80분과 160분 지점을 잘라야 합니다.`
+        },
+        {
+          speaker: '👧 단짝 친구 채윤이',
+          text: `좋았어! 한 묶음이 80분인 걸 찾았네! 그러면 80분은 몇 시간 몇 분일까?`,
+          tip: `60분은 1시간이에요. 80분에서 60분을 빼보세요!`,
+          extraHint: `80분 = 60분(1시간) + 20분!`,
+          opts: ['1시간 10분', `1시간 20분 (${renderFrac(1, 1, 3)}시간)`, '1시간 30분', `1시간 40분 (${renderFrac(1, 2, 3)}시간)`],
+          ans: `1시간 20분 (${renderFrac(1, 1, 3)}시간)`,
+          explain: `80분은 60분(1시간)과 20분이므로 1시간 20분(= 1과 1/3시간)입니다.`
+        },
+        {
+          speaker: '👧 단짝 친구 채윤이',
+          type: 'timetable_choice',
+          text: `우리가 오전 10시 10분에 ㉮구역 체험관에 들어간대. 1시간 20분 동안 관람한다면 몇 시 몇 분에 점심 먹으러 모이면 될까?`,
+          tip: `10시 10분에 1시간 20분을 더해보세요!`,
+          extraHint: `10시 + 1시간 = 11시, 10분 + 20분 = 30분!`,
+          opts: ['오전 11시 10분', '오전 11시 20분', '오전 11시 30분', '오전 11시 40분'],
+          ans: '오전 11시 30분',
+          explain: `10시 10분 + 1시간 20분 = 11시 30분입니다.`
+        }
+      ],
+      battleQuestions: [
+        {
+          q: `밑변이 ${renderFrac(3, 3, 4)} cm, 높이가 ${renderFrac(2, 2, 5)} cm인 이 평행사변형의 넓이는 얼마일까요?`,
+          opts: ['8 cm²', '9 cm²', `${renderFrac(10, 1, 2)} cm²`, `${renderFrac(9, 1, 4)} cm²`],
+          ans: '9 cm²',
+          explain: `평행사변형 넓이 = 밑변 × 높이 = (15/4) × (12/5) = 180/20 = 9 cm²입니다.`,
+          svg: `
+            <polygon points="50,110 230,110 290,40 110,40" fill="#fef3c7" stroke="#d97706" stroke-width="2.5" />
+            <line x1="110" y1="40" x2="110" y2="110" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
+            <path d="M 110 100 L 120 100 L 120 110" fill="none" stroke="#ef4444" stroke-width="1.5" />
+            <line x1="50" y1="125" x2="230" y2="125" stroke="#475569" stroke-width="1.5" />
+            <text x="140" y="142" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 3 3/4 cm</text>
+            <text x="75" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 2 2/5 cm</text>
+          `
+        },
+        {
+          q: `밑변이 ${renderFrac(4, 1, 6)} cm, 높이가 ${renderFrac(3, 3, 5)} cm인 이 평행사변형의 넓이는 얼마일까요?`,
+          opts: ['12 cm²', '14 cm²', '15 cm²', `${renderFrac(16, 1, 2)} cm²`],
+          ans: '15 cm²',
+          explain: `(25/6) × (18/5) = (5 × 3) / 1 = 15 cm²입니다.`,
+          svg: `
+            <polygon points="40,115 220,115 285,35 105,35" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2.5" />
+            <line x1="105" y1="35" x2="105" y2="115" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
+            <path d="M 105 105 L 115 105 L 115 115" fill="none" stroke="#ef4444" stroke-width="1.5" />
+            <line x1="40" y1="130" x2="220" y2="130" stroke="#475569" stroke-width="1.5" />
+            <text x="130" y="145" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 4 1/6 cm</text>
+            <text x="70" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 3 3/5 cm</text>
+          `
+        }
+      ]
+    }
+  };
+
+  function onWeekChange(val) {
+    currentWeek = val;
+    chatStep = 0;
+    chatCombo = 0;
+    battleIdx = 0;
+    monsterHp = 100;
+    switchStage('chat');
+    renderChatQuest();
+  }
+
   function switchStage(stage) {
     currentStage = stage;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -323,114 +499,22 @@
     if (stage === 'battle') loadBattleQuestion();
   }
 
-  /* ================= 1. 탐사 롤플레잉 엔진 (10문항 완벽 유지) ================= */
+  /* ================= 1. 탐사 롤플레잉 엔진 ================= */
   let chatStep = 0;
   let selectedCuts = [];
   let chatCombo = 0;
 
-  const chatQuests = [
-    {
-      speaker: '🚀 우주비행사 루카',
-      text: `만두야 반가워! 우주복 무게는 지구에서 80 kg이야. 화성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 19, 50)}배래. 화성에서 잰 우주복의 무게는 얼마일까?`,
-      tip: `80 kg을 똑같이 50등분한 것 중 19묶음이라는 뜻이에요!`,
-      extraHint: `80 × 19/50 식을 세우고 분모와 분자를 10으로 약분해 보세요!`,
-      opts: [`${renderFrac(30, 2, 5)} kg`, `${renderFrac(32, 1, 5)} kg`, `${renderFrac(28, 4, 5)} kg`, `${renderFrac(30, 4, 5)} kg`],
-      ans: `${renderFrac(30, 2, 5)} kg`,
-      explain: `80 × 19/50 = (8 × 19)/5 = 152/5 = 30과 2/5 kg이 됩니다.`
-    },
-    {
-      speaker: '🚀 우주비행사 루카',
-      text: `이번에는 금성으로 가보자! 금성에서는 끌어당기는 힘이 지구의 ${renderFrac(null, 91, 100)}배래. 지구에서 80 kg인 우주복은 금성에서 몇 kg일까?`,
-      tip: `80 kg에 금성의 중력 비율을 곱해 보세요.`,
-      extraHint: `80 × 91/100 식을 세운 뒤 80과 100을 20으로 약분해 보세요!`,
-      opts: [`${renderFrac(72, 4, 5)} kg`, `${renderFrac(70, 2, 5)} kg`, `${renderFrac(74, 1, 5)} kg`, `${renderFrac(71, 3, 5)} kg`],
-      ans: `${renderFrac(72, 4, 5)} kg`,
-      explain: `80 × 91/100 = (4 × 91)/5 = 364/5 = 72와 4/5 kg이 됩니다.`
-    },
-    {
-      speaker: '🚀 우주비행사 루카',
-      text: `우주선에 전력을 공급할 직사각형 태양광 전지판을 조립해야 해. 가로가 ${renderFrac(1, 1, 3)} m이고 세로가 ${renderFrac(2, 3, 8)} m일 때 넓이는 얼마일까?`,
-      tip: `직사각형 넓이 = 가로 × 세로. 대분수를 가분수로 고쳐 계산하세요!`,
-      extraHint: `4/3 × 19/8 식을 세우고 4와 8을 먼저 약분해 보세요!`,
-      opts: [`${renderFrac(3, 1, 6)} m²`, `${renderFrac(3, 1, 3)} m²`, `${renderFrac(2, 5, 6)} m²`, `${renderFrac(3, 1, 2)} m²`],
-      ans: `${renderFrac(3, 1, 6)} m²`,
-      explain: `(4/3) × (19/8) = 19/6 = 3과 1/6 m²입니다.`
-    },
-    {
-      speaker: '🍳 셰프 한',
-      text: `만두 조수, 어서 와요! 15 kg 포대에 설탕이 9 kg 남아있어요. 이 중 ${renderFrac(null, 4, 9)}를 사용해 딸기잼을 만들려고 해요. 설탕은 몇 kg일까요?`,
-      tip: `남아있는 9 kg을 9등분한 것 중 4묶음이에요!`,
-      extraHint: `식: 9 × 4/9 로 바로 계산해 보세요!`,
-      opts: ['3 kg', '4 kg', '5 kg', `${renderFrac(4, 1, 2)} kg`],
-      ans: '4 kg',
-      explain: `9 × 4/9 = 4 kg입니다.`
-    },
-    {
-      speaker: '🍳 셰프 한',
-      text: `딸기잼을 만들고 남은 설탕은 5 kg이에요. 이제 이 남은 설탕의 ${renderFrac(null, 5, 6)}로 상큼한 레몬청을 만들려고 해요. 설탕은 몇 kg일까요?`,
-      tip: `남은 5 kg에 5/6를 곱해보세요!`,
-      extraHint: `식: 5 × 5/6 = 25/6 을 대분수로 바꿔보세요!`,
-      opts: [`${renderFrac(4, 1, 6)} kg`, `${renderFrac(4, 1, 3)} kg`, `${renderFrac(3, 5, 6)} kg`, `${renderFrac(4, 5, 6)} kg`],
-      ans: `${renderFrac(4, 1, 6)} kg`,
-      explain: `5 × 5/6 = 25/6 = 4와 1/6 kg입니다.`
-    },
-    {
-      speaker: '🍳 셰프 한',
-      text: `넓이가 12 m²인 직사각형 텃밭에서 파를 텃밭 전체의 ${renderFrac(null, 5, 8)}만큼 심었고, 배추는 파 넓이의 ${renderFrac(null, 2, 5)}만큼 심었대요. 배추 넓이는 몇 m²일까요?`,
-      tip: `12 m²에 두 분수를 차례대로 곱해보세요!`,
-      extraHint: `12 × 5/8 × 2/5 식에서 약분을 먼저 해보세요!`,
-      opts: ['2 m²', '3 m²', '4 m²', `${renderFrac(3, 1, 2)} m²`],
-      ans: '3 m²',
-      explain: `12 × (5/8) × (2/5) = 12 × 1/4 = 3 m²입니다.`
-    },
-    {
-      speaker: '👧 단짝 친구 채윤이',
-      text: `만두야! 우리가 체험관에서 관람할 수 있는 순수 시간은 총 4시간이래. 1시간이 60분이니까 4시간은 총 몇 분일까?`,
-      tip: `60 × 4를 계산해보세요!`,
-      extraHint: `60분씩 4번 더하면 얼마일까요?`,
-      opts: ['180분', '200분', '240분', '300분'],
-      ans: '240분',
-      explain: `60 × 4 = 240분입니다.`
-    },
-    {
-      speaker: '👧 단짝 친구 채윤이',
-      type: 'bar_split',
-      text: `우와 맞아! 총 240분이야. 그런데 ㉮구역은 4시간 중 딱 ${renderFrac(null, 1, 3)}만 관람할 수 있대. 240분을 3묶음으로 똑같이 나누려면 몇 분, 몇 분 지점을 잘라야 할까?`,
-      tip: `240 ÷ 3 = 80분이에요!`,
-      extraHint: `첫 번째는 80분, 두 번째는 160분 지점이에요!`,
-      explain: `240분을 3등분하면 한 조각당 80분이므로, 80분과 160분 지점을 잘라야 합니다.`
-    },
-    {
-      speaker: '👧 단짝 친구 채윤이',
-      text: `좋았어! 한 묶음이 80분인 걸 찾았네! 그러면 80분은 몇 시간 몇 분일까?`,
-      tip: `60분은 1시간이에요. 80분에서 60분을 빼보세요!`,
-      extraHint: `80분 = 60분(1시간) + 20분!`,
-      opts: ['1시간 10분', `1시간 20분 (${renderFrac(1, 1, 3)}시간)`, '1시간 30분', `1시간 40분 (${renderFrac(1, 2, 3)}시간)`],
-      ans: `1시간 20분 (${renderFrac(1, 1, 3)}시간)`,
-      explain: `80분은 60분(1시간)과 20분이므로 1시간 20분(= 1과 1/3시간)입니다.`
-    },
-    {
-      speaker: '👧 단짝 친구 채윤이',
-      type: 'timetable_choice',
-      text: `우리가 오전 10시 10분에 ㉮구역 체험관에 들어간대. 1시간 20분 동안 관람한다면 몇 시 몇 분에 점심 먹으러 모이면 될까?`,
-      tip: `10시 10분에 1시간 20분을 더해보세요!`,
-      extraHint: `10시 + 1시간 = 11시, 10분 + 20분 = 30분!`,
-      opts: ['오전 11시 10분', '오전 11시 20분', '오전 11시 30분', '오전 11시 40분'],
-      ans: '오전 11시 30분',
-      explain: `10시 10분 + 1시간 20분 = 11시 30분입니다.`
-    }
-  ];
-
   function renderChatQuest() {
+    const qList = allQuestsDB[currentWeek].chatQuests;
     const container = document.getElementById('chat-body');
     container.innerHTML = '';
 
-    if (chatStep >= chatQuests.length) {
+    if (chatStep >= qList.length) {
       container.innerHTML = `
         <div class="next-stage-banner">
           <div style="font-size:2.5rem;">🏆</div>
-          <h3>우주·셰프·여행 3대 탐구 미션 완전 정복!</h3>
-          <p>안만두 학생, 정말 대단해요! 10개의 복잡한 분수와 시간 계획을 스스로 멋지게 풀어냈습니다.</p>
+          <h3>${allQuestsDB[currentWeek].title} 완전 정복!</h3>
+          <p>안만두 학생, 정말 대단해요! 복잡한 문제들을 스스로 멋지게 풀어냈습니다.</p>
           <div style="display:flex; gap:10px;">
             <button class="next-stage-btn" onclick="switchStage('sym')">🧩 2단계: 선대칭 모눈 퍼즐 도전하기 👉</button>
             <button class="next-stage-btn" style="background:#f59e0b;" onclick="openWrongNoteModal()">📖 오답노트를 클릭해 봐!</button>
@@ -441,8 +525,8 @@
       return;
     }
 
-    const q = chatQuests[chatStep];
-    document.getElementById('chat-progress-tag').innerText = `🚀 사고력 탐사 (${chatStep + 1}/${chatQuests.length})`;
+    const q = qList[chatStep];
+    document.getElementById('chat-progress-tag').innerText = `🚀 사고력 탐사 (${chatStep + 1}/${qList.length})`;
     document.getElementById('chat-score-tag').innerText = `🔥 콤보: ${chatCombo}`;
 
     const bubble = document.createElement('div');
@@ -521,7 +605,7 @@
     });
     container.appendChild(optGrid);
 
-    const fb = document.getElementById('chat-feedback');
+    const fb = document.createElement('div');
     fb.id = 'chat-feedback';
     fb.style.textAlign = 'center';
     fb.style.fontWeight = 'bold';
@@ -546,7 +630,7 @@
     const sorted = [...selectedCuts].sort((a,b) => a - b);
     const isCorrect = (sorted.length === 2 && sorted[0] === 80 && sorted[1] === 160);
 
-    logResult('사고력수학', '막대 3등분 지점 찾기', sorted.join(', '), '80, 160', isCorrect, '240분을 3등분하면 80분씩이므로 80분과 160분을 잘라야 합니다.');
+    logResult(`[${currentWeek}] 사고력수학`, '막대 3등분 지점 찾기', sorted.join(', '), '80, 160', isCorrect, '240분을 3등분하면 80분씩이므로 80분과 160분을 잘라야 합니다.');
 
     if (isCorrect) {
       confetti({ particleCount: 50, spread: 60 });
@@ -565,7 +649,7 @@
     const fb = document.getElementById('chat-feedback');
     const isCorrect = (selected === q.ans);
 
-    logResult('사고력수학', q.speaker + ' 미션', selected.replace(/<[^>]*>?/gm, ''), q.ans.replace(/<[^>]*>?/gm, ''), isCorrect, q.explain);
+    logResult(`[${currentWeek}] 사고력수학`, q.speaker + ' 미션', selected.replace(/<[^>]*>?/gm, ''), q.ans.replace(/<[^>]*>?/gm, ''), isCorrect, q.explain);
 
     if (isCorrect) {
       confetti({ particleCount: 40, spread: 50 });
@@ -580,7 +664,7 @@
     }
   }
 
-  /* ================= 2. 선대칭 모눈 퍼즐 (70% 성공률 & 지능형 상호작용 교체) ================= */
+  /* ================= 2. 선대칭 모눈 퍼즐 ================= */
   let currentPieceType = 'small_tri';
   let gridState = Array(4).fill(null).map(() => Array(4).fill(null).map(() => ({ T: null, R: null, B: null, L: null })));
   let symFailCount = 0;
@@ -693,13 +777,11 @@
     const mirrorC = 3 - userC;
     const mirrorSub = (userSub === 'L') ? 'R' : (userSub === 'R') ? 'L' : userSub;
 
-    // 1번째 턴 또는 3번째 턴에는 컴퓨터가 먼저 다른 위치에 문제를 제시
     if (symTurnCount === 1 || symTurnCount === 3) {
       placeChallengerPiece();
       return;
     }
 
-    // 70% 확률로 대칭 보조, 30% 확률로 새로운 도전 과제 제시
     if (Math.random() < 0.70) {
       if (currentPieceType === 'small_tri' && !gridState[userR][mirrorC][mirrorSub]) {
         gridState[userR][mirrorC][mirrorSub] = '#f59e0b';
@@ -779,7 +861,7 @@
           ⚔️ 3단계: 평행사변형 배틀 도전하기 👉
         </button>
       `;
-      logResult('사고력수학', '선대칭 퍼즐 완성', '완벽 대칭 성공', '선대칭', true, '빨간 대칭축을 중심으로 양쪽 모형이 정확히 포개어집니다.');
+      logResult(`[${currentWeek}] 사고력수학`, '선대칭 퍼즐 완성', '완벽 대칭 성공', '선대칭', true, '빨간 대칭축을 중심으로 양쪽 모형이 정확히 포개어집니다.');
     } else if (!isSym && filled >= 12) {
       symFailCount++;
       document.getElementById('sym-fail-counter').innerText = `실패 횟수: ${symFailCount}회 (도전 성공률: 70%)`;
@@ -790,42 +872,13 @@
     }
   }
 
-  /* ================= 3. 평행사변형 배틀 (2단계 풀코스 완벽 유지) ================= */
+  /* ================= 3. 평행사변형 배틀 ================= */
   let monsterHp = 100;
   let battleIdx = 0;
-  const battleQuestions = [
-    {
-      q: `밑변이 ${renderFrac(3, 3, 4)} cm, 높이가 ${renderFrac(2, 2, 5)} cm인 이 평행사변형의 넓이는 얼마일까요?`,
-      opts: ['8 cm²', '9 cm²', `${renderFrac(10, 1, 2)} cm²`, `${renderFrac(9, 1, 4)} cm²`],
-      ans: '9 cm²',
-      explain: `평행사변형 넓이 = 밑변 × 높이 = (15/4) × (12/5) = 180/20 = 9 cm²입니다.`,
-      svg: `
-        <polygon points="50,110 230,110 290,40 110,40" fill="#fef3c7" stroke="#d97706" stroke-width="2.5" />
-        <line x1="110" y1="40" x2="110" y2="110" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
-        <path d="M 110 100 L 120 100 L 120 110" fill="none" stroke="#ef4444" stroke-width="1.5" />
-        <line x1="50" y1="125" x2="230" y2="125" stroke="#475569" stroke-width="1.5" />
-        <text x="140" y="142" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 3 3/4 cm</text>
-        <text x="75" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 2 2/5 cm</text>
-      `
-    },
-    {
-      q: `밑변이 ${renderFrac(4, 1, 6)} cm, 높이가 ${renderFrac(3, 3, 5)} cm인 이 평행사변형의 넓이는 얼마일까요?`,
-      opts: ['12 cm²', '14 cm²', '15 cm²', `${renderFrac(16, 1, 2)} cm²`],
-      ans: '15 cm²',
-      explain: `(25/6) × (18/5) = (5 × 3) / 1 = 15 cm²입니다.`,
-      svg: `
-        <polygon points="40,115 220,115 285,35 105,35" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2.5" />
-        <line x1="105" y1="35" x2="105" y2="115" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" />
-        <path d="M 105 105 L 115 105 L 115 115" fill="none" stroke="#ef4444" stroke-width="1.5" />
-        <line x1="40" y1="130" x2="220" y2="130" stroke="#475569" stroke-width="1.5" />
-        <text x="130" y="145" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">밑변: 4 1/6 cm</text>
-        <text x="70" y="75" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">높이: 3 3/5 cm</text>
-      `
-    }
-  ];
 
   function loadBattleQuestion() {
-    if (battleIdx >= battleQuestions.length) {
+    const qList = allQuestsDB[currentWeek].battleQuestions;
+    if (battleIdx >= qList.length) {
       document.getElementById('battle-round-tag').innerText = `🏆 완벽 마스터!`;
       document.getElementById('monster-hp-txt').innerText = `0%`;
       document.getElementById('monster-hp-bar').style.width = `0%`;
@@ -843,8 +896,8 @@
       return;
     }
 
-    const q = battleQuestions[battleIdx];
-    document.getElementById('battle-round-tag').innerText = `👾 몬스터 체력 (${battleIdx + 1}/2단계)`;
+    const q = qList[battleIdx];
+    document.getElementById('battle-round-tag').innerText = `👾 몬스터 체력 (${battleIdx + 1}/${qList.length}단계)`;
     document.getElementById('monster-hp-txt').innerText = `${monsterHp}%`;
     document.getElementById('monster-hp-bar').style.width = `${monsterHp}%`;
     document.getElementById('battle-q-text').innerHTML = q.q;
@@ -860,7 +913,7 @@
       btn.onclick = () => {
         const isCorrect = (opt === q.ans);
         const fb = document.getElementById('battle-feedback');
-        logResult('사고력수학', `평행사변형 넓이 ${battleIdx + 1}단계`, opt.replace(/<[^>]*>?/gm, ''), q.ans.replace(/<[^>]*>?/gm, ''), isCorrect, q.explain);
+        logResult(`[${currentWeek}] 사고력수학`, `평행사변형 넓이 ${battleIdx + 1}단계`, opt.replace(/<[^>]*>?/gm, ''), q.ans.replace(/<[^>]*>?/gm, ''), isCorrect, q.explain);
 
         if (isCorrect) {
           confetti({ particleCount: 60, spread: 60 });
