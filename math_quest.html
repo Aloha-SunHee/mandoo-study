@@ -211,9 +211,36 @@
     .timetable-row:last-child { border-bottom: none; }
     .time-slot { font-weight: bold; color: var(--primary); }
 
-    .palette-row { display: flex; gap: 10px; justify-content: center; }
-    .piece-btn { border: 2px solid var(--border); background: white; border-radius: 12px; padding: 8px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: bold; font-size: 0.9rem; }
-    .piece-btn.active { border-color: var(--primary); background: #e0e7ff; }
+    /* 대칭 퍼즐 팔레트 & 직각 방향 선택 */
+    .palette-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .piece-btn { border: 2px solid var(--border); background: white; border-radius: 12px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: bold; font-size: 0.88rem; }
+    .piece-btn.active { border-color: var(--primary); background: #e0e7ff; color: var(--primary); }
+    
+    .dir-select-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #f1f5f9;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.84rem;
+      font-weight: bold;
+      color: #334155;
+    }
+    .dir-btn {
+      border: 1px solid #cbd5e1;
+      background: white;
+      border-radius: 8px;
+      padding: 5px 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+    }
+    .dir-btn.active {
+      background: #2563eb;
+      color: white;
+      border-color: #1d4ed8;
+    }
 
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; padding: 16px; z-index: 100; }
     .modal-card { background: white; border-radius: 20px; padding: 22px; width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
@@ -251,28 +278,38 @@
     <div id="chat-body" style="display:flex; flex-direction:column; gap:14px;"></div>
   </div>
 
-  <!-- 스테이지 2: 선대칭 모눈 퍼즐 (선생님 맞춤형 4턴 승부) -->
+  <!-- 스테이지 2: 선대칭 모눈 퍼즐 (빨간선 접촉 규칙 & 직각 방향 선택 적용) -->
   <div id="stage-sym" class="content-card hidden">
     <div style="text-align:center;">
       <h3 style="margin:0 0 6px 0;">🧩 대칭 모형을 만들어 보자!</h3>
       <p style="margin:0; font-size:0.92rem; color:var(--text-sub);">
-        "만두야, 딱 4번의 기회야! 빨간 대칭축을 중심으로 양쪽이 똑같아지도록 완성해봐!"
+        "빨간 대칭축에 딱 붙여서 양쪽이 똑같아지도록 완성해봐! (딱 4번의 기회!)"
       </p>
       <div style="font-size:0.88rem; color:#4f46e5; font-weight:bold; margin-top:6px;" id="sym-turn-indicator">
         만두의 도전: 0 / 4번 완료 (성공률 90% 모드 🎯)
       </div>
     </div>
 
+    <!-- 도형 선택 팔레트 -->
     <div class="palette-row">
       <button class="piece-btn active" id="p-btn-yellow" onclick="selectPiece('small_tri')">🟡 작은삼각 (1칸)</button>
       <button class="piece-btn" id="p-btn-blue" onclick="selectPiece('big_tri')">🔵 큰삼각 (2칸)</button>
       <button class="piece-btn" id="p-btn-green" onclick="selectPiece('rhombus')">🟢 마름모 (4칸)</button>
     </div>
 
+    <!-- 큰삼각 방향 선택 컨트롤러 (큰삼각 선택 시에만 표시) -->
+    <div class="dir-select-box" id="big-tri-dir-box">
+      <span>📐 큰삼각 직각 방향:</span>
+      <button class="dir-btn active" id="dir-TL" onclick="setBigTriDir('TL')">◤ 좌상</button>
+      <button class="dir-btn" id="dir-TR" onclick="setBigTriDir('TR')">◥ 우상</button>
+      <button class="dir-btn" id="dir-BL" onclick="setBigTriDir('BL')">◣ 좌하</button>
+      <button class="dir-btn" id="dir-BR" onclick="setBigTriDir('BR')">◢ 우하</button>
+    </div>
+
     <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
       <svg id="sym-svg" width="320" height="320" viewBox="0 0 320 320" style="background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); cursor:pointer;"></svg>
       <div id="sym-feedback" style="font-weight:bold; font-size:0.95rem; min-height:24px; text-align:center;">
-        👉 조각을 선택하고 빨간 대칭축 주변을 터치해 보세요!
+        👉 조각을 선택하고 빨간 대칭축 바로 옆칸을 터치해 보세요!
       </div>
       <div id="sym-next-box" class="hidden" style="width:100%;"></div>
     </div>
@@ -663,11 +700,11 @@
     }
   }
 
-  /* ================= 2. 선대칭 모눈 퍼즐 (선생님 요청 90% 성공률 & 4턴 판정 엔진) ================= */
+  /* ================= 2. 선대칭 모눈 퍼즐 (빨간선 접촉 규칙 & 큰삼각 4방향 회전) ================= */
   let currentPieceType = 'small_tri';
+  let bigTriDir = 'TL'; // TL, TR, BL, BR
   let gridState = Array(4).fill(null).map(() => Array(4).fill(null).map(() => ({ T: null, R: null, B: null, L: null })));
-  let mandooTurns = 0; // 만두가 놓은 횟수 (1 ~ 4)
-  let computerFirstChallenge = null; // 1턴에 컴퓨터가 낸 비대칭 도전 조각 좌표
+  let mandooTurns = 0;
 
   function selectPiece(type) {
     currentPieceType = type;
@@ -675,16 +712,30 @@
     if (type === 'small_tri') document.getElementById('p-btn-yellow').classList.add('active');
     if (type === 'big_tri') document.getElementById('p-btn-blue').classList.add('active');
     if (type === 'rhombus') document.getElementById('p-btn-green').classList.add('active');
+
+    // 큰삼각일 때만 직각 방향 선택 바 표시
+    const dirBox = document.getElementById('big-tri-dir-box');
+    if (type === 'big_tri') {
+      dirBox.classList.remove('hidden');
+    } else {
+      dirBox.classList.add('hidden');
+    }
+  }
+
+  function setBigTriDir(dir) {
+    bigTriDir = dir;
+    document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('dir-' + dir).classList.add('active');
   }
 
   function initSymGame() {
     gridState = Array(4).fill(null).map(() => Array(4).fill(null).map(() => ({ T: null, R: null, B: null, L: null })));
     mandooTurns = 0;
-    computerFirstChallenge = null;
     document.getElementById('sym-turn-indicator').innerText = `만두의 도전: 0 / 4번 완료 (성공률 90% 모드 🎯)`;
     document.getElementById('sym-next-box').classList.add('hidden');
-    document.getElementById('sym-feedback').innerText = '👉 조각을 선택하고 빨간 대칭축 주변을 터치해 보세요!';
+    document.getElementById('sym-feedback').innerText = '👉 조각을 선택하고 빨간 대칭축 바로 옆칸을 터치해 보세요!';
     document.getElementById('sym-feedback').style.color = 'var(--text)';
+    selectPiece(currentPieceType);
     renderSymSVG();
   }
 
@@ -735,6 +786,7 @@
       }
     }
 
+    // 중앙 대칭축 빨간 선 (x=160)
     const symLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     symLine.setAttribute('x1', 160); symLine.setAttribute('y1', 0);
     symLine.setAttribute('x2', 160); symLine.setAttribute('y2', 320);
@@ -744,122 +796,115 @@
   }
 
   function onCellClick(r, c, sub) {
-    if (gridState[r][c][sub]) return;
-    if (mandooTurns >= 4) return; // 4번 다 두었으면 대기
+    if (mandooTurns >= 4) return;
 
-    let color = '#f59e0b';
+    // [대전제 1] 빨간선(c=1의 오른쪽 또는 c=2의 왼쪽)에 닿아있지 않으면 배치 불가!
+    if (c !== 1 && c !== 2) {
+      alert('빨간 대칭축에 닿아있는 중앙 2칸(왼쪽 1칸, 오른쪽 1칸)에 조각을 놓아주세요!');
+      return;
+    }
+
     if (currentPieceType === 'small_tri') {
-      color = '#f59e0b';
-      gridState[r][c][sub] = color;
+      if (gridState[r][c][sub]) return;
+      gridState[r][c][sub] = '#f59e0b';
     } else if (currentPieceType === 'big_tri') {
-      color = '#2563eb';
-      const neighbor = (sub === 'T') ? 'R' : (sub === 'R') ? 'B' : (sub === 'B') ? 'L' : 'T';
-      if (gridState[r][c][neighbor]) {
-        alert('이곳에는 큰 삼각형(2칸)을 온전히 놓을 수 없어요!');
+      // 4가지 직각 방향(TL: T+L, TR: T+R, BL: B+L, BR: B+R)
+      let s1 = 'T', s2 = 'L';
+      if (bigTriDir === 'TL') { s1 = 'T'; s2 = 'L'; }
+      if (bigTriDir === 'TR') { s1 = 'T'; s2 = 'R'; }
+      if (bigTriDir === 'BL') { s1 = 'B'; s2 = 'L'; }
+      if (bigTriDir === 'BR') { s1 = 'B'; s2 = 'R'; }
+
+      if (gridState[r][c][s1] || gridState[r][c][s2]) {
+        alert('이곳에는 선택한 방향의 큰삼각형을 온전히 놓을 수 없어요!');
         return;
       }
-      gridState[r][c][sub] = color;
-      gridState[r][c][neighbor] = color;
+      gridState[r][c][s1] = '#2563eb';
+      gridState[r][c][s2] = '#2563eb';
     } else if (currentPieceType === 'rhombus') {
-      color = '#10b981';
       if (gridState[r][c].T || gridState[r][c].R || gridState[r][c].B || gridState[r][c].L) {
-        alert('이곳에는 마름모(4칸)를 온전히 놓을 수 없어요!');
+        alert('이곳에는 마름모를 온전히 놓을 수 없어요!');
         return;
       }
-      gridState[r][c].T = color; gridState[r][c].R = color;
-      gridState[r][c].B = color; gridState[r][c].L = color;
+      gridState[r][c].T = '#10b981'; gridState[r][c].R = '#10b981';
+      gridState[r][c].B = '#10b981'; gridState[r][c].L = '#10b981';
     }
 
     mandooTurns++;
     document.getElementById('sym-turn-indicator').innerText = `만두의 도전: ${mandooTurns} / 4번 완료 (성공률 90% 모드 🎯)`;
     renderSymSVG();
 
-    // 만두가 4번째 수를 놓았을 때: 더 이상 컴퓨터 턴 없이 즉시 최종 결과 판정!
     if (mandooTurns === 4) {
-      setTimeout(() => {
-        judgeFinalSymmetry();
-      }, 350);
+      setTimeout(() => judgeFinalSymmetry(), 400);
       return;
     }
 
-    // 1~3번째 수에 대한 지능형 컴퓨터 응답 (성공률 90% 알고리즘)
     setTimeout(() => {
-      computer90Response(r, c, sub, color);
+      computerStrictAxisResponse(r, c);
       renderSymSVG();
     }, 450);
   }
 
-  function computer90Response(userR, userC, userSub, userColor) {
-    const mirrorC = 3 - userC;
-    const mirrorSub = (userSub === 'L') ? 'R' : (userSub === 'R') ? 'L' : userSub;
+  // 컴퓨터 응답: 무조건 빨간 대칭축(c=1 또는 c=2)에만 조각을 놓아 만두를 지원
+  function computerStrictAxisResponse(userR, userC) {
+    const mirrorC = (userC === 1) ? 2 : 1; // 반대편 축 바로 옆칸
 
-    // [만두 1턴 대응]: 컴퓨터는 바로 대칭이 아닌 반대편 다른 행에 "새로운 도전 조각"을 먼저 제시
+    // 1턴: 만두와 다른 행의 대칭축에 '작은삼각(1칸)' 도전 조각 제시
     if (mandooTurns === 1) {
-      // 만두와 다른 행 선택
-      let chalR = (userR + 2) % 4;
-      let chalC = (userC < 2) ? 2 + Math.floor(Math.random() * 2) : Math.floor(Math.random() * 2);
-      
-      gridState[chalR][chalC].T = '#2563eb';
-      gridState[chalR][chalC].R = '#2563eb';
-      computerFirstChallenge = { r: chalR, c: chalC, sub: 'T', neighbor: 'R', color: '#2563eb' };
-
-      document.getElementById('sym-feedback').innerHTML = `🤖 "만두야! 내가 <b>${chalR+1}행</b>에 파란 삼각을 먼저 놓았어. 반대편 대칭도 고려해 봐!"`;
-      document.getElementById('sym-feedback').style.color = '#2563eb';
-      return;
+      let chalR = (userR + 1) % 4;
+      let targetSub = (mirrorC === 2) ? 'L' : 'R'; // 빨간선에 딱 붙는 삼각
+      if (!gridState[chalR][mirrorC][targetSub]) {
+        gridState[chalR][mirrorC][targetSub] = '#f59e0b';
+        document.getElementById('sym-feedback').innerHTML = `🤖 "만두야! 내가 <b>빨간선 ${chalR+1}행</b>에 노란 삼각을 먼저 놓았어. 반대편도 고려해봐!"`;
+        document.getElementById('sym-feedback').style.color = '#2563eb';
+        return;
+      }
     }
 
-    // [만두 2턴 대응]: 1턴에 다르게 나왔으므로, 2턴 만두가 둔 수에는 "무조건 똑같이 대칭"으로 놓아줌
+    // 2턴: 만두가 놓은 것을 보고 정확히 거울 대칭으로 맞추어 줌!
     if (mandooTurns === 2) {
-      placeExactSymmetry(userR, userC, userSub, userColor);
-      document.getElementById('sym-feedback').innerHTML = `🤖 "좋아! 만두가 놓은 자리에 똑같이 대칭으로 맞춰줄게! 잘하고 있어!"`;
+      mirrorUserCell(userR, userC, mirrorC);
+      document.getElementById('sym-feedback').innerHTML = `🤖 "좋아! 빨간선을 기준으로 정확히 거울 대칭으로 맞춰줄게!"`;
       document.getElementById('sym-feedback').style.color = '#10b981';
       return;
     }
 
-    // [만두 3턴 대응]: 90% 성공률의 핵심 - 만두가 4번째에 쉽게 이길 수 있도록 판을 완성해 줌
+    // 3턴: 90% 확률로 빈 행의 대칭축 짝을 메워 만두가 4턴에 쉽게 이기도록 판을 완성해 줌
     if (mandooTurns === 3) {
       if (Math.random() < 0.90) {
-        // 90% 확률: 1턴에 컴퓨터가 냈던 도전 과제의 대칭 짝을 맞춰주거나, 만두 3턴의 대칭을 지원
-        if (computerFirstChallenge && !isCellSymmetric(computerFirstChallenge.r, computerFirstChallenge.c)) {
-          // 1턴 조각의 대칭 짝을 컴퓨터가 대신 메워줌 -> 이제 만두는 4번째에 자기 조각 짝만 맞추면 100% 대칭!
-          placeExactSymmetry(computerFirstChallenge.r, computerFirstChallenge.c, computerFirstChallenge.sub, computerFirstChallenge.color);
-          document.getElementById('sym-feedback').innerHTML = `🤖 "내가 1턴에 냈던 조각의 짝을 맞췄어! 이제 만두의 마지막 4번째 수로 대칭을 완성해 봐!"`;
-        } else {
-          placeExactSymmetry(userR, userC, userSub, userColor);
-          document.getElementById('sym-feedback').innerHTML = `🤖 "완벽한 협동이야! 마지막 4번째 조각만 제대로 놓으면 성공이야!"`;
+        // 비대칭인 행을 찾아 거울 짝을 대신 메워줌
+        let resolved = false;
+        for (let r = 0; r < 4; r++) {
+          if (!isRowSymmetric(r)) {
+            mirrorUserCell(r, (gridState[r][1].T || gridState[r][1].R || gridState[r][1].B || gridState[r][1].L) ? 1 : 2, mirrorC);
+            resolved = true;
+            break;
+          }
         }
+        if (!resolved) mirrorUserCell(userR, userC, mirrorC);
+        document.getElementById('sym-feedback').innerHTML = `🤖 "완벽한 협동이야! 마지막 4번째 조각만 제대로 놓으면 성공이야!"`;
         document.getElementById('sym-feedback').style.color = '#10b981';
       } else {
-        // 10% 변칙: 다른 곳에 놓아 만두에게 고난도 공간 지각 요구
-        let emptyR = (userR + 1) % 4;
-        gridState[emptyR][2].B = '#f59e0b';
         document.getElementById('sym-feedback').innerHTML = `🤖 "마지막 4번째! 빨간 대칭축을 집중해서 살펴봐!"`;
-        document.getElementById('sym-feedback').style.color = '#f59e0b';
       }
     }
   }
 
-  function placeExactSymmetry(r, c, sub, color) {
-    const mirrorC = 3 - c;
-    const mirrorSub = (sub === 'L') ? 'R' : (sub === 'R') ? 'L' : sub;
-
-    if (color === '#f59e0b') {
-      gridState[r][mirrorC][mirrorSub] = color;
-    } else if (color === '#2563eb') {
-      const neighbor = (mirrorSub === 'T') ? 'L' : (mirrorSub === 'L') ? 'B' : (mirrorSub === 'B') ? 'R' : 'T';
-      gridState[r][mirrorC][mirrorSub] = color;
-      gridState[r][mirrorC][neighbor] = color;
-    } else if (color === '#10b981') {
-      gridState[r][mirrorC].T = color; gridState[r][mirrorC].R = color;
-      gridState[r][mirrorC].B = color; gridState[r][mirrorC].L = color;
-    }
+  function mirrorUserCell(r, fromC, toC) {
+    ['T','R','B','L'].forEach(sub => {
+      const color = gridState[r][fromC][sub];
+      if (color) {
+        // 좌우 거울 반전: L <-> R
+        const mirrorSub = (sub === 'L') ? 'R' : (sub === 'R') ? 'L' : sub;
+        gridState[r][toC][mirrorSub] = color;
+      }
+    });
   }
 
-  function isCellSymmetric(r, c) {
-    const mirrorC = 3 - c;
+  function isRowSymmetric(r) {
     return ['T','R','B','L'].every(s => {
       const ms = (s === 'L') ? 'R' : (s === 'R') ? 'L' : s;
-      return gridState[r][c][s] === gridState[r][mirrorC][ms];
+      return gridState[r][1][s] === gridState[r][2][ms];
     });
   }
 
@@ -868,21 +913,18 @@
     let filledCount = 0;
 
     for (let r = 0; r < 4; r++) {
-      for (let c = 0; c < 2; c++) {
-        const mirrorC = 3 - c;
-        ['T','R','B','L'].forEach(sub => {
-          const leftColor = gridState[r][c][sub];
-          const mirrorSub = (sub === 'L') ? 'R' : (sub === 'R') ? 'L' : sub;
-          const rightColor = gridState[r][mirrorC][mirrorSub];
+      ['T','R','B','L'].forEach(sub => {
+        const leftColor = gridState[r][1][sub];
+        const mirrorSub = (sub === 'L') ? 'R' : (sub === 'R') ? 'L' : sub;
+        const rightColor = gridState[r][2][mirrorSub];
 
-          if (leftColor) filledCount++;
-          if (rightColor) filledCount++;
+        if (leftColor) filledCount++;
+        if (rightColor) filledCount++;
 
-          if (leftColor !== rightColor) {
-            isSym = false;
-          }
-        });
-      }
+        if (leftColor !== rightColor) {
+          isSym = false;
+        }
+      });
     }
 
     const fb = document.getElementById('sym-feedback');
@@ -892,7 +934,7 @@
     if (isSym && filledCount >= 6) {
       confetti({ particleCount: 70, spread: 65 });
       fb.style.color = '#10b981';
-      fb.innerText = '🎉 대단해 만두야! 4번 만에 빨간선을 기준으로 완벽한 대칭을 완성했어!';
+      fb.innerText = '🎉 대단해 만두야! 빨간선을 기준으로 완벽한 대칭을 완성했어!';
       nextBox.innerHTML = `
         <button class="next-stage-btn" style="width:100%; justify-content:center;" onclick="switchStage('battle')">
           ⚔️ 3단계: 평행사변형 배틀 도전하기 👉
