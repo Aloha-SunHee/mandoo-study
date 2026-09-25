@@ -32,7 +32,7 @@
       max-width: 620px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
     .header {
       background: var(--card-bg);
@@ -44,6 +44,32 @@
       align-items: center;
     }
     .header h1 { font-size: 1.15rem; margin: 0; color: var(--primary); }
+
+    /* 주차 선택 바 */
+    .week-selector-card {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .week-label { font-size: 0.88rem; font-weight: bold; color: #3730a3; white-space: nowrap; }
+    .week-select {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #a5b4fc;
+      background: white;
+      font-weight: bold;
+      color: #312e81;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+    }
+
     .nav-tabs {
       display: flex;
       background: #e2e8f0;
@@ -168,18 +194,27 @@
     <button style="border:none; background: #e0e7ff; color:var(--primary); padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="openTeacherModal()">📋 학습관리</button>
   </div>
 
+  <!-- 주차 및 회차 선택 바 -->
+  <div class="week-selector-card">
+    <span class="week-label">📚 단원 선택:</span>
+    <select class="week-select" id="week-select" onchange="onWeekChange(this.value)">
+      <option value="week1">1주차: 전과목 기초 진단 & 1학기 핵심 연계</option>
+      <!-- 향후 2주차, 3주차 단원이 이곳에 계속 추가되어 동생들도 복습할 수 있습니다 -->
+    </select>
+  </div>
+
   <div class="nav-tabs" id="subject-tabs">
-    <button class="tab-btn active" onclick="selectSubject('korean')">국어 (6)</button>
-    <button class="tab-btn" onclick="selectSubject('social')">사회 (3)</button>
-    <button class="tab-btn" onclick="selectSubject('science')">과학 (3)</button>
-    <button class="tab-btn" onclick="selectSubject('english')">영어 (3)</button>
-    <button class="tab-btn" onclick="selectSubject('math')">수학연산 (3)</button>
+    <button class="tab-btn active" id="tab-korean" onclick="selectSubject('korean')">국어 (6)</button>
+    <button class="tab-btn" id="tab-social" onclick="selectSubject('social')">사회 (3)</button>
+    <button class="tab-btn" id="tab-science" onclick="selectSubject('science')">과학 (3)</button>
+    <button class="tab-btn" id="tab-english" onclick="selectSubject('english')">영어 (3)</button>
+    <button class="tab-btn" id="tab-math" onclick="selectSubject('math')">수학연산 (3)</button>
   </div>
 
   <div id="quiz-card" class="content-card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <span id="quiz-progress-tag" style="font-size:0.85rem; font-weight:bold; color:var(--primary);">문제 1/6</span>
-      <span id="quiz-score-tag" style="font-size:0.85rem; color:var(--text-sub);">진행률: 0%</span>
+      <span id="quiz-score-tag" style="font-size:0.85rem; color:var(--text-sub);">과목: KOREAN</span>
     </div>
 
     <div class="q-box">
@@ -195,7 +230,7 @@
   <div id="all-clear-card" class="content-card hidden">
     <div class="mission-clear-banner">
       <div style="font-size:2.8rem;">🎉</div>
-      <h2 style="margin:0; color:#1d4ed8;">오늘 수고했어! ALL MISSION CLEAR!</h2>
+      <h2 style="margin:0; color:#1d4ed8;" id="clear-title-txt">오늘 수고했어! ALL MISSION CLEAR!</h2>
       <p style="margin:0; color:#3b82f6; font-size:0.95rem;">국어·사회·과학·영어·수학 전과목 퀘스트를 모두 완주했습니다!</p>
       <div style="display:flex; gap:10px; margin-top:8px;">
         <button class="action-btn btn-wrong" onclick="openWrongNoteModal()">📖 오답노트를 클릭해 봐!</button>
@@ -239,148 +274,170 @@
   let gasUrl = localStorage.getItem('mandoo_gas_url') || 'https://script.google.com/macros/s/AKfycbxRyWlPe3gNupbf38mDHXtMtsL7QkhPrB4Ex0Y_NYh9q-76MZDl76rQU_CaT-Drh2SC0A/exec';
   let studyLogs = JSON.parse(localStorage.getItem('mandoo_all_logs') || '[]');
 
+  /* ================= 📚 주차별 전과목 아카이브 데이터베이스 ================= */
+  let currentWeek = 'week1';
   const subjectOrder = ['korean', 'social', 'science', 'english', 'math'];
   let currentSubject = 'korean';
   let qIdx = 0;
 
-  const quizDB = {
-    korean: [
-      {
-        type: '속담',
-        q: '작고 하찮은 것이라도 꾸준히 모으면 큰 덩어리가 된다는 뜻의 속담은 무엇일까요?',
-        opts: ['티끌 모아 태산', '소 잃고 외양간 고친다', '가는 말이 고와야 오는 말이 곱다', '돌다리도 두들겨 보고 건너라'],
-        ans: '티끌 모아 태산',
-        explain: '【티끌 모아 태산】은 작은 노력이나 물건이 모여 아주 큰 결과를 만든다는 뜻입니다. (소 잃고 외양간 고친다는 일이 일어난 뒤 후회한다는 뜻이에요.)'
-      },
-      {
-        type: '관용어',
-        q: '어떤 일을 해결하기 위해 매우 적극적으로 앞장설 때 쓰는 관용어는?',
-        opts: ['발을 벗고 나서다', '손을 놓다', '눈에 불을 켜다', '귀를 기울이다'],
-        ans: '발을 벗고 나서다',
-        explain: '【발을 벗고 나서다】는 자기 일처럼 온 힘을 다해 적극적으로 돕는다는 뜻입니다. (손을 놓다는 하던 일을 그만두고 포기한다는 반대 뜻이에요.)'
-      },
-      {
-        type: '사자성어',
-        q: '마음과 마음이 서로 통하여 말을 하지 않아도 서로의 생각을 알 수 있음을 이르는 말은?',
-        opts: ['이심전심 (以心傳心)', '작심삼일 (作心三日)', '동문서답 (東問西答)', '고진감래 (苦盡甘來)'],
-        ans: '이심전심 (以心傳心)',
-        explain: '【이심전심】: 마음에서 마음으로 뜻이 전해진다는 뜻!\n【작심삼일】: 결심한 마음이 사흘(3일)을 가지 못한다는 뜻으로 서로 완전히 달라요.'
-      },
-      {
-        type: '맞춤법',
-        q: '다음 문장에서 밑줄 친 부분의 맞춤법이 올바른 것은?',
-        opts: ['숙제를 먼저 끝내야 돼.', '숙제를 먼저 끝내야 되.', '안 돼는 건 없어.', '그 일은 잘 되서 다행이야.'],
-        ans: '숙제를 먼저 끝내야 돼.',
-        explain: '문장의 맨 끝에는 \'되어\'의 준말인 \'돼\'를 씁니다. \'하\'를 넣었을 때 말이 되면 \'되\', \'해\'를 넣었을 때 말이 되면 \'돼\'를 쓰는 공식이에요! (끝내야 해 -> 돼)'
-      },
-      {
-        type: '띄어쓰기',
-        q: '다음 중 띄어쓰기가 가장 올바른 문장은?',
-        opts: ['배가 부를 만큼 많이 먹었다.', '배가 부를만큼 많이 먹었다.', '너 만큼 잘하는 사람도 드물다.', '만두 만큼 착한 아이.'],
-        ans: '배가 부를 만큼 많이 먹었다.',
-        explain: '\'만큼\' 앞에 꾸며주는 말(부를)이 올 때는 띄어 써야 합니다. (이름 뒤에 붙는 너만큼, 만두만큼은 붙여 씁니다.)'
-      },
-      {
-        type: '조사와 접속사',
-        q: '빈칸에 들어갈 가장 자연스러운 접속 부사와 조사는? "만두는 수학(  ) 잘하고, (  ) 영어도 즐겁게 공부한다."',
-        opts: ['도 / 그리고', '만 / 하지만', '을 / 그러나', '는 / 그런데'],
-        ans: '도 / 그리고',
-        explain: '두 가지 긍정적인 장점을 나란히 이어줄 때는 보조사 \'도\'와 앞뒤 문장을 더해주는 접속사 \'그리고\'가 가장 자연스럽습니다.'
-      }
-    ],
-    social: [
-      {
-        type: '우리 국토',
-        q: '우리나라 영토의 가장 동쪽에 위치한 섬으로, 독도와 함께 동해를 지키는 섬은?',
-        opts: ['울릉도', '제주도', '백령도', '마라도'],
-        ans: '울릉도',
-        explain: '울릉도와 독도는 동해 바다에 위치한 우리나라의 소중한 영토입니다. (마라도는 가장 남쪽 끝 섬입니다.)'
-      },
-      {
-        type: '우리 지형',
-        q: '우리나라 지형의 가장 큰 특징으로, 동쪽은 산이 많고 서쪽은 평야가 많은 형태를 무엇이라 할까요?',
-        opts: ['동고서저', '동저서고', '남고북저', '분지 지형'],
-        ans: '동고서저',
-        explain: '동쪽(태백산맥)이 높고 서쪽으로 갈수록 지형이 낮아져 평야가 펼쳐지는 지형을 \'동고서저\'라고 합니다.'
-      },
-      {
-        type: '민주주의',
-        q: '국민이 나라의 주인이 되어 스스로 권리를 행사하는 정치 형태를 무엇이라 할까요?',
-        opts: ['민주주의', '독재주의', '군주제', '귀족정'],
-        ans: '민주주의',
-        explain: '대한민국 헌법 제1조: 대한민국은 민주공화국이며, 모든 주권은 국민에게서 나옵니다.'
-      }
-    ],
-    science: [
-      {
-        type: '생태계',
-        q: '빛과 이산화탄소를 이용해 광합성을 하여 스스로 양분을 만드는 생물을 무엇이라 할까요?',
-        opts: ['생산자 (식물)', '소비자 (동물)', '분해자 (곰팡이)', '기생생물'],
-        ans: '생산자 (식물)',
-        explain: '식물처럼 스스로 양분을 만드는 생물은 생태계의 \'생산자\'입니다.'
-      },
-      {
-        type: '태양계',
-        q: '태양계 행성 중 태양과 가장 가까우며 표면에 달처럼 운석 구덩이가 많은 행성은?',
-        opts: ['수성', '금성', '지구', '화성'],
-        ans: '수성',
-        explain: '태양에서 가장 가까운 행성은 수성(Mercury)이며 대기가 거의 없어 표면에 운석 구덩이가 많습니다.'
-      },
-      {
-        type: '물질의 상태변화',
-        q: '물이 끓어 수증기(기체)로 변하는 현상을 무엇이라고 부를까요?',
-        opts: ['기화', '응결', '응고', '융해'],
-        ans: '기화',
-        explain: '액체가 열을 얻어 기체로 변하는 상태 변화를 \'기화\'라고 합니다.'
-      }
-    ],
-    english: [
-      {
-        type: 'Past Tense (G4-5)',
-        q: 'Choose the correct past tense verb: "While snorkeling at Hanauma Bay yesterday, we (    ) three sea turtles."',
-        opts: ['saw', 'seen', 'sees', 'have seen'],
-        ans: 'saw',
-        explain: '어제(yesterday) 있었던 과거의 단순한 동작을 나타내므로 불규칙 과거형 \'saw\'가 정답입니다.'
-      },
-      {
-        type: 'Figurative Language (Simile)',
-        q: 'Which of the following sentences contains a "simile"?',
-        opts: ['The island breeze was as gentle as a whisper.', 'The stars were twinkling diamonds.', 'The ocean waves danced in the sunlight.', 'Time flies when you have fun.'],
-        ans: 'The island breeze was as gentle as a whisper.',
-        explain: '\'as ~ as\'나 \'like\'를 써서 두 대상을 직접 빗대어 표현한 문장을 Simile(직유법)이라고 부릅니다.'
-      },
-      {
-        type: 'Subject-Verb Agreement (G4-5)',
-        q: 'Fill in the blank: "Neither of the boys (    ) to miss the championship soccer match."',
-        opts: ['wants', 'want', 'are wanting', 'have wanted'],
-        ans: 'wants',
-        explain: '\'Neither of the 복수명사\'는 3인칭 단수 취급하므로 동사에 -s가 붙은 \'wants\'가 올바릅니다.'
-      }
-    ],
-    math: [
-      {
-        type: '진분수 곱셈',
-        q: '다음 분수의 곱셈을 계산하세요: ( 3/8 ) × ( 4/9 ) = ?',
-        opts: ['1/6', '2/9', '1/12', '4/27'],
-        ans: '1/6',
-        explain: '분자 3과 분모 9를 3으로 약분(1, 3), 분자 4와 분모 8을 4로 약분(1, 2)하면 (1×1)/(2×3) = 1/6이 됩니다.'
-      },
-      {
-        type: '세자리 곱셈',
-        q: '다음 곱셈의 결과는 얼마일까요? 342 × 25 = ?',
-        opts: ['8,550', '8,450', '8,650', '7,550'],
-        ans: '8,550',
-        explain: '342 × 20 = 6,840이고, 342 × 5 = 1,710입니다. 둘을 더하면 6,840 + 1,710 = 8,550입니다.'
-      },
-      {
-        type: '세자리 나눗셈',
-        q: '다음 나눗셈의 몫은 얼마일까요? 896 ÷ 28 = ?',
-        opts: ['32', '31', '28', '34'],
-        ans: '32',
-        explain: '28 × 30 = 840, 896 - 840 = 56입니다. 56 ÷ 28 = 2이므로 몫은 32가 됩니다.'
-      }
-    ]
+  const allSubjectsDB = {
+    week1: {
+      title: "1주차: 전과목 기초 진단 & 1학기 핵심 연계",
+      korean: [
+        {
+          type: '속담',
+          q: '작고 하찮은 것이라도 꾸준히 모으면 큰 덩어리가 된다는 뜻의 속담은 무엇일까요?',
+          opts: ['티끌 모아 태산', '소 잃고 외양간 고친다', '가는 말이 고와야 오는 말이 곱다', '돌다리도 두들겨 보고 건너라'],
+          ans: '티끌 모아 태산',
+          explain: '【티끌 모아 태산】은 작은 노력이나 물건이 모여 아주 큰 결과를 만든다는 뜻입니다. (소 잃고 외양간 고친다는 일이 일어난 뒤 후회한다는 뜻이에요.)'
+        },
+        {
+          type: '관용어',
+          q: '어떤 일을 해결하기 위해 매우 적극적으로 앞장설 때 쓰는 관용어는?',
+          opts: ['발을 벗고 나서다', '손을 놓다', '눈에 불을 켜다', '귀를 기울이다'],
+          ans: '발을 벗고 나서다',
+          explain: '【발을 벗고 나서다】는 자기 일처럼 온 힘을 다해 적극적으로 돕는다는 뜻입니다. (손을 놓다는 하던 일을 그만두고 포기한다는 반대 뜻이에요.)'
+        },
+        {
+          type: '사자성어',
+          q: '마음과 마음이 서로 통하여 말을 하지 않아도 서로의 생각을 알 수 있음을 이르는 말은?',
+          opts: ['이심전심 (以心傳心)', '작심삼일 (作心三日)', '동문서답 (東問西答)', '고진감래 (苦盡甘來)'],
+          ans: '이심전심 (以心傳心)',
+          explain: '【이심전심】: 마음에서 마음으로 뜻이 전해진다는 뜻!\n【작심삼일】: 결심한 마음이 사흘(3일)을 가지 못한다는 뜻으로 서로 완전히 달라요.'
+        },
+        {
+          type: '맞춤법',
+          q: '다음 문장에서 밑줄 친 부분의 맞춤법이 올바른 것은?',
+          opts: ['숙제를 먼저 끝내야 돼.', '숙제를 먼저 끝내야 되.', '안 돼는 건 없어.', '그 일은 잘 되서 다행이야.'],
+          ans: '숙제를 먼저 끝내야 돼.',
+          explain: '문장의 맨 끝에는 \'되어\'의 준말인 \'돼\'를 씁니다. \'하\'를 넣었을 때 말이 되면 \'되\', \'해\'를 넣었을 때 말이 되면 \'돼\'를 쓰는 공식이에요! (끝내야 해 -> 돼)'
+        },
+        {
+          type: '띄어쓰기',
+          q: '다음 중 띄어쓰기가 가장 올바른 문장은?',
+          opts: ['배가 부를 만큼 많이 먹었다.', '배가 부를만큼 많이 먹었다.', '너 만큼 잘하는 사람도 드물다.', '만두 만큼 착한 아이.'],
+          ans: '배가 부를 만큼 많이 먹었다.',
+          explain: '\'만큼\' 앞에 꾸며주는 말(부를)이 올 때는 띄어 써야 합니다. (이름 뒤에 붙는 너만큼, 만두만큼은 붙여 씁니다.)'
+        },
+        {
+          type: '조사와 접속사',
+          q: '빈칸에 들어갈 가장 자연스러운 접속 부사와 조사는? "만두는 수학(  ) 잘하고, (  ) 영어도 즐겁게 공부한다."',
+          opts: ['도 / 그리고', '만 / 하지만', '을 / 그러나', '는 / 그런데'],
+          ans: '도 / 그리고',
+          explain: '두 가지 긍정적인 장점을 나란히 이어줄 때는 보조사 \'도\'와 앞뒤 문장을 더해주는 접속사 \'그리고\'가 가장 자연스럽습니다.'
+        }
+      ],
+      social: [
+        {
+          type: '우리 국토',
+          q: '우리나라 영토의 가장 동쪽에 위치한 섬으로, 독도와 함께 동해를 지키는 섬은?',
+          opts: ['울릉도', '제주도', '백령도', '마라도'],
+          ans: '울릉도',
+          explain: '울릉도와 독도는 동해 바다에 위치한 우리나라의 소중한 영토입니다. (마라도는 가장 남쪽 끝 섬입니다.)'
+        },
+        {
+          type: '우리 지형',
+          q: '우리나라 지형의 가장 큰 특징으로, 동쪽은 산이 많고 서쪽은 평야가 많은 형태를 무엇이라 할까요?',
+          opts: ['동고서저', '동저서고', '남고북저', '분지 지형'],
+          ans: '동고서저',
+          explain: '동쪽(태백산맥)이 높고 서쪽으로 갈수록 지형이 낮아져 평야가 펼쳐지는 지형을 \'동고서저\'라고 합니다.'
+        },
+        {
+          type: '민주주의',
+          q: '국민이 나라의 주인이 되어 스스로 권리를 행사하는 정치 형태를 무엇이라 할까요?',
+          opts: ['민주주의', '독재주의', '군주제', '귀족정'],
+          ans: '민주주의',
+          explain: '대한민국 헌법 제1조: 대한민국은 민주공화국이며, 모든 주권은 국민에게서 나옵니다.'
+        }
+      ],
+      science: [
+        {
+          type: '생태계',
+          q: '빛과 이산화탄소를 이용해 광합성을 하여 스스로 양분을 만드는 생물을 무엇이라 할까요?',
+          opts: ['생산자 (식물)', '소비자 (동물)', '분해자 (곰팡이)', '기생생물'],
+          ans: '생산자 (식물)',
+          explain: '식물처럼 스스로 양분을 만드는 생물은 생태계의 \'생산자\'입니다.'
+        },
+        {
+          type: '태양계',
+          q: '태양계 행성 중 태양과 가장 가까우며 표면에 달처럼 운석 구덩이가 많은 행성은?',
+          opts: ['수성', '금성', '지구', '화성'],
+          ans: '수성',
+          explain: '태양에서 가장 가까운 행성은 수성(Mercury)이며 대기가 거의 없어 표면에 운석 구덩이가 많습니다.'
+        },
+        {
+          type: '물질의 상태변화',
+          q: '물이 끓어 수증기(기체)로 변하는 현상을 무엇이라고 부를까요?',
+          opts: ['기화', '응결', '응고', '융해'],
+          ans: '기화',
+          explain: '액체가 열을 얻어 기체로 변하는 상태 변화를 \'기화\'라고 합니다.'
+        }
+      ],
+      english: [
+        {
+          type: 'Past Tense (G4-5)',
+          q: 'Choose the correct past tense verb: "While snorkeling at Hanauma Bay yesterday, we (    ) three sea turtles."',
+          opts: ['saw', 'seen', 'sees', 'have seen'],
+          ans: 'saw',
+          explain: '어제(yesterday) 있었던 과거의 단순한 동작을 나타내므로 불규칙 과거형 \'saw\'가 정답입니다.'
+        },
+        {
+          type: 'Figurative Language (Simile)',
+          q: 'Which of the following sentences contains a "simile"?',
+          opts: ['The island breeze was as gentle as a whisper.', 'The stars were twinkling diamonds.', 'The ocean waves danced in the sunlight.', 'Time flies when you have fun.'],
+          ans: 'The island breeze was as gentle as a whisper.',
+          explain: '\'as ~ as\'나 \'like\'를 써서 두 대상을 직접 빗대어 표현한 문장을 Simile(직유법)이라고 부릅니다.'
+        },
+        {
+          type: 'Subject-Verb Agreement (G4-5)',
+          q: 'Fill in the blank: "Neither of the boys (    ) to miss the championship soccer match."',
+          opts: ['wants', 'want', 'are wanting', 'have wanted'],
+          ans: 'wants',
+          explain: '\'Neither of the 복수명사\'는 3인칭 단수 취급하므로 동사에 -s가 붙은 \'wants\'가 올바릅니다.'
+        }
+      ],
+      math: [
+        {
+          type: '진분수 곱셈',
+          q: '다음 분수의 곱셈을 계산하세요: ( 3/8 ) × ( 4/9 ) = ?',
+          opts: ['1/6', '2/9', '1/12', '4/27'],
+          ans: '1/6',
+          explain: '분자 3과 분모 9를 3으로 약분(1, 3), 분자 4와 분모 8을 4로 약분(1, 2)하면 (1×1)/(2×3) = 1/6이 됩니다.'
+        },
+        {
+          type: '세자리 곱셈',
+          q: '다음 곱셈의 결과는 얼마일까요? 342 × 25 = ?',
+          opts: ['8,550', '8,450', '8,650', '7,550'],
+          ans: '8,550',
+          explain: '342 × 20 = 6,840이고, 342 × 5 = 1,710입니다. 둘을 더하면 6,840 + 1,710 = 8,550입니다.'
+        },
+        {
+          type: '세자리 나눗셈',
+          q: '다음 나눗셈의 몫은 얼마일까요? 896 ÷ 28 = ?',
+          opts: ['32', '31', '28', '34'],
+          ans: '32',
+          explain: '28 × 30 = 840, 896 - 840 = 56입니다. 56 ÷ 28 = 2이므로 몫은 32가 됩니다.'
+        }
+      ]
+    }
   };
+
+  function onWeekChange(val) {
+    currentWeek = val;
+    currentSubject = 'korean';
+    qIdx = 0;
+    updateTabCounts();
+    selectSubject('korean');
+  }
+
+  function updateTabCounts() {
+    const curWeekData = allSubjectsDB[currentWeek];
+    document.getElementById('tab-korean').innerText = `국어 (${curWeekData.korean.length})`;
+    document.getElementById('tab-social').innerText = `사회 (${curWeekData.social.length})`;
+    document.getElementById('tab-science').innerText = `과학 (${curWeekData.science.length})`;
+    document.getElementById('tab-english').innerText = `영어 (${curWeekData.english.length})`;
+    document.getElementById('tab-math').innerText = `수학연산 (${curWeekData.math.length})`;
+  }
 
   function selectSubject(sub) {
     currentSubject = sub;
@@ -394,7 +451,7 @@
   }
 
   function renderQuestion() {
-    const list = quizDB[currentSubject];
+    const list = allSubjectsDB[currentWeek][currentSubject];
     const q = list[qIdx];
     document.getElementById('quiz-progress-tag').innerText = `문제 ${qIdx + 1}/${list.length}`;
     document.getElementById('quiz-score-tag').innerText = `과목: ${currentSubject.toUpperCase()}`;
@@ -419,8 +476,8 @@
     const fb = document.getElementById('q-feedback');
     const nextArea = document.getElementById('next-action-area');
 
-    // 상세 오답/정답 해설 로깅
-    logResult(currentSubject, q.type + ': ' + q.q, chosen, q.ans, isCorrect, q.explain);
+    // 주차 정보와 상세 오답/정답 해설 로깅
+    logResult(`[${currentWeek}] ${currentSubject}`, q.type + ': ' + q.q, chosen, q.ans, isCorrect, q.explain);
 
     if (isCorrect) {
       confetti({ particleCount: 40, spread: 50 });
@@ -432,7 +489,7 @@
     }
 
     setTimeout(() => {
-      if (qIdx + 1 < quizDB[currentSubject].length) {
+      if (qIdx + 1 < allSubjectsDB[currentWeek][currentSubject].length) {
         qIdx++;
         renderQuestion();
       } else {
@@ -450,6 +507,7 @@
         } else {
           // 전과목 완주
           document.getElementById('quiz-card').classList.add('hidden');
+          document.getElementById('clear-title-txt').innerText = `🎉 ${allSubjectsDB[currentWeek].title} 완주!`;
           document.getElementById('all-clear-card').classList.remove('hidden');
           confetti({ particleCount: 90, spread: 70 });
         }
@@ -538,6 +596,8 @@
     `).join('');
   }
 
+  // 초기화 실행
+  updateTabCounts();
   selectSubject('korean');
 </script>
 </body>
