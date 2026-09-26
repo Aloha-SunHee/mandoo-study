@@ -302,7 +302,7 @@
   let studyLogs = JSON.parse(localStorage.getItem('mandoo_all_logs') || '[]');
 
   /* ================= 📚 주차별 전과목 아카이브 데이터베이스 ================= */
-  let currentWeek = 'week2'; // 기본 2주차로 실행
+  let currentWeek = 'week2';
   const subjectOrder = ['korean', 'social', 'science', 'english', 'math'];
   let currentSubject = 'korean';
   let qIdx = 0;
@@ -507,7 +507,7 @@
         },
         {
           type: '조사와 접속사',
-          q: '빈칸에 들어갈 가장 자연스러운 접속 부사와 조사는? "만두는 수학(  ) 잘하고, (  ) 영어도 즐겁게 공부한다."',
+          q: '빈칸에 들어갈 가장 자연스러운 접속 부사와 조사는? "만두는 수학(   ) 잘하고, (   ) 영어도 즐겁게 공부한다."',
           opts: ['도 / 그리고', '만 / 하지만', '을 / 그러나', '는 / 그런데'],
           ans: '도 / 그리고',
           explain: '두 가지 긍정적인 장점을 나란히 이어줄 때는 보조사 \'도\'와 접속사 \'그리고\'가 자연스럽습니다.'
@@ -608,6 +608,16 @@
     }
   };
 
+  // 🎲 보기 배열을 무작위로 섞어주는 함수 (Fisher-Yates Shuffle)
+  function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
   function onWeekChange(val) {
     currentWeek = val;
     currentSubject = 'korean';
@@ -657,10 +667,14 @@
 
     const optBox = document.getElementById('q-options');
     optBox.innerHTML = '';
-    q.opts.forEach(opt => {
+    
+    // 🌟 핵심 변경: 보기 목록을 매 문제 출력 시마다 무작위로 셔플
+    const shuffledOptions = shuffleArray(q.opts);
+
+    shuffledOptions.forEach((opt, index) => {
       const btn = document.createElement('button');
       btn.className = 'opt-btn';
-      btn.innerText = opt;
+      btn.innerText = `${index + 1}. ${opt}`;
       btn.onclick = () => checkAnswer(opt, q);
       optBox.appendChild(btn);
     });
@@ -671,6 +685,10 @@
     const fb = document.getElementById('q-feedback');
     const nextArea = document.getElementById('next-action-area');
 
+    // 보기 버튼 중복 클릭 방지 비활성화
+    const optButtons = document.querySelectorAll('#q-options .opt-btn');
+    optButtons.forEach(btn => btn.disabled = true);
+
     // 구글 시트 연동 로깅 (주차 정보 포함)
     logResult(`[${currentWeek}] ${currentSubject}`, q.type + ': ' + q.q, chosen, q.ans, isCorrect, q.explain);
 
@@ -680,7 +698,6 @@
       if (q.isBalloon) {
         fb.innerText = '🎈 정답! 풍선 끈을 꼭 잡았어! 목적지로 둥실 날아갑니다! ✨';
       } else {
-        fb.style.color = '#10b981';
         fb.innerText = '⭕ 정답입니다! 훌륭해요!';
       }
     } else {
